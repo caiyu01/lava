@@ -525,6 +525,24 @@ classdef lava
             opOut = lava(opVar1,coeff1);
         end
         
+        % test of symmetry
+        function result = issymmetric(op1)
+            % First we simplify the object
+            op1 = simplify(op1);
+            
+            % Now we check the structure
+            result = isequal(op1, op1.transpose);
+        end
+        
+        % test of hermiticity
+        function result = ishermitian(op1)
+            % First we simplify the object
+            op1 = simplify(op1);
+            
+            % Now we check the structure
+            result = isequal(op1, op1.ctranspose);
+        end
+        
         % reshape
         function result = reshape(op1, varargin)
             if length(varargin)==1
@@ -681,6 +699,61 @@ classdef lava
                     list = unique([list; tmp],'rows');
                 end
                 out = lava(mat2cell(list,ones(1,size(list,1)),w));
+            end
+        end
+        
+        % toStr
+        function result = toStr(op1)
+            % This function returns a string description of the polynomial matrix
+            result = cell(size(op1));
+            
+            for i = 1:size(op1,1)
+                for j = 1:size(op1,2)
+                    text = ' + ';
+                    for k = 1:size(op1.opVar,3)
+                        if (op1.coeff(i,j,k) ~= 0)
+                            if op1.coeff(i,j,k) < 0
+                                % correct the sign
+                                text = [text(1:end-2), '- '];
+                            end
+                            if sum(op1.opVar(i,j,k,:)) == 0
+                                % just a constant term
+                                text = [text, num2str(abs(op1.coeff(i,j,k))), ' + '];
+                            else
+                                % some operators are involved
+                                if abs(op1.coeff(i,j,k)) ~= 1
+                                    % write the coefficient if not unity
+                                    text = [text, num2str(abs(op1.coeff(i,j,k))), '*'];
+                                end
+
+                                ops = [0 squeeze(op1.opVar(i,j,k,:))' 0];
+                                operatorStart = 1;
+                                for l = 2:length(ops)
+                                    if ops(l) ~= ops(l-1)
+                                        % found a new operator, we:
+                                        % 1. finish writing the previous
+                                        %    operator
+                                        power = l-operatorStart;
+                                        if (ops(l-1) ~= 0)
+                                            if (power ~= 1)
+                                                text = [text, '^', num2str(power), '*'];
+                                            else
+                                                text = [text, '*'];
+                                            end
+                                        end
+                                        % 2. write the new operator
+                                        if l-1 <= size(op1.opVar,4)
+                                            text = [text, 'x', num2str(ops(l))];
+                                        end
+                                        operatorStart = l;
+                                    end
+                                end
+                                text = [text(1:end-1), ' + '];
+                            end
+                        end
+                    end
+                    result{i,j} = text(4:end-3);
+                end
             end
         end
         
