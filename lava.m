@@ -475,6 +475,55 @@ classdef lava
             end
         end
         
+        % rdivide
+        function opOut = rdivide(op1,op2)
+            % Element-wise division. We only support specific cases.
+            
+            if ~isa(op2, 'lava') || isequal(op2.uniqueVar.opVar, 0)
+                % division by scalars
+                if isa(op2, 'lava')
+                    opOut = lava(op1.opVar, op1.coeff./op2.coeff);
+                else
+                    opOut = lava(op1.opVar, op1.coeff./op2);
+                end
+            else
+                error('Unsupported arguments');
+            end
+        end
+        
+        % mrdivide
+        function opOut = mrdivide(op1,op2)
+            % Matrix division, only division by a scalar is supported
+            
+            if numel(op2) == 1
+                 opOut = rdivide(op1,op2);
+            else
+                error('Unsupported arguments');
+            end
+        end
+        
+        % element-wise power
+        function opOut = power(op1,exponent)
+            if ~isa(exponent, 'double') || (numel(exponent) ~= 1) || ~isequal(round(exponent), exponent) || (exponent < 0)
+                error('Elemement-wise power is only supported with simple exponents.');
+            end
+            
+            opOut = op1;
+            for i = 2:exponent
+                opOut = opOut.*op1;
+            end
+        end
+        
+        % matrix power
+        function opOut = mpower(op1,exponent)
+            % We only support matrix powers ... for scalars ;-)
+            if numel(op1) ~= 1
+                error('Operation only implemented on scalars');
+            end
+            
+            npOut = power(op1,exponent);
+        end
+        
         % kronecker
         function opOut = kron(op1,op2)
             % kronecker product between
@@ -527,6 +576,23 @@ classdef lava
             opVar1 = permute(opVar1,[2 1 3 4]);
             coeff1 = permute(coeff1,[2 1 3 4]); % only transposition
             opOut = lava(opVar1,coeff1);
+        end
+        
+        % test if the object is a scalar
+        function result = isscalar(op1)
+            % Returns true iff op1 is 1x1 and a constant (i.e. involves no
+            % variable).
+            
+            % First we check the dimension
+            if numel(op1) > 1
+                result = false;
+                return;
+            end
+            
+            % Now we have only one element. We check if it involves any
+            % variables.
+            op1 = op1.simplify;
+            result = (op1.opVar == 0);
         end
         
         % test of symmetry
