@@ -178,86 +178,70 @@ classdef lava
         %    subscripted referecing and assignment
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         
+        % Squeezed operators and coefficients access
+        function result = sOpVar(op1)
+            result = squeeze(op1.opVar);
+        end
+        
+        function result = sCoeff(op1)
+            result = squeeze(op1.coeff);
+        end
+        
         % subscripted referencing
         function varargout = subsref(op1,s)
             % Supported indexing
             % a.opVar, a.coeff
-            % a.opVar(1), a.opVar(1,1) (squeezed)
+            % a.opVar(1), a.opVar(1,1) (not squeezed, use a(1,1).sOpVar for squeezed opVars!)
             % a(1), a(1,2), a(1,:)
             % a(1).opVar, a(1,2).coeff (not squeezed, 4-D or 3-D)
             
-           switch s(1).type
+            if length(s) > 1
+                varargout{1} = op1;
+                for i = 1:length(s)
+                    varargout{1} = subsref(varargout{1},s(i));
+                end
+                return;
+            end
+            
+            assert(length(s) == 1);
+            % Now we can have only one subsref level
+            switch s(1).type
               case '.'
-                 if length(s) == 1
-                    % a.opVar, a.coeff
-                     prop = s(1).subs;
-                    varargout{1} = op1.(prop);
-                 elseif length(s) == 2
-                     prop = s(1).subs;
-                     % extract only the matrix dimension
-                     t = s(2);
-                     t.subs = [t.subs ':' ':'];
-                     if length(s(2).subs) == 2
-                        varargout{1} = squeeze(subsref(op1.(prop),t));
-                     elseif length(s(2).subs)==1
-                         [m1, n1, d1, w1] = size(op1);
-                         switch prop
-                             case 'opVar'
-                                 tmp = reshape(op1.opVar,m1*n1,d1,w1);
-                             case 'coeff'
-                                 tmp = reshape(op1.coeff,m1*n1,d1);
-                         end
-                             varargout{1} = squeeze(subsref(tmp,t));
-                     else
-                         error('Indexing not supported.')
-                     end
-                 else
-                      error('Invalid indexing expression.')
-                 end
+                 % a.opVar, a.coeff or a.method
+                 prop = s(1).subs;
+                 varargout{1} = op1.(prop);
               case '()'
-                 if length(s) == 1
-                     % example a(1)
-                     [m1, n1, d1, w1] = size(op1);
-                     % extract only the matrix dimension
-                     t = s;
-                     t.subs = [t.subs ':' ':'];
-                     if length(s.subs) == 2
-                        m2 = length(s.subs{1});
-                        n2 = length(s.subs{2});
-                        if strcmp(s.subs{1},':')
-                            m2 = m1;
-                        end
-                        if strcmp(s.subs{2},':')
-                            n2 = n1;
-                        end
-                        opVar1 = subsref(op1.opVar,t);
-                        opVar1 = reshape(opVar1,[m2,n2,d1,w1]);
-                        coeff1 = subsref(op1.coeff,t);
-                        coeff1 = reshape(coeff1,[m2,n2,d1]);
-                     elseif length(s.subs)==1
-                         m2 = length(s.subs{1});
-                         if strcmp(s.subs{1},':')
-                             m2 = numel(op1);
-                         end
-                         opVar1 = subsref(reshape(op1.opVar,m1*n1,d1,w1),t);
-                         opVar1 = reshape(opVar1,[m2,1,d1,w1]);
-                         coeff1 = subsref(reshape(op1.coeff,m1*n1,d1),t);
-                         coeff1 = reshape(coeff1,[m2,1,d1]);
-                     else
-                         error('Indexing not supported. a(1) or a(1,2)')
-                     end                     
-                     varargout{1} = lava(opVar1,coeff1);
-                 elseif length(s) >= 2
-                    % Implement obj(ind).PropertyName
-                    % a(1,1).coeff
-                    varargout{1} = op1;
-                    for i = 1:length(s)
-                        varargout{1} = subsref(varargout{1},s(i));
+                 % example a(1)
+                 [m1, n1, d1, w1] = size(op1);
+                 % extract only the matrix dimension
+                 t = s;
+                 t.subs = [t.subs ':' ':'];
+                 if length(s.subs) == 2
+                    m2 = length(s.subs{1});
+                    n2 = length(s.subs{2});
+                    if strcmp(s.subs{1},':')
+                        m2 = m1;
                     end
+                    if strcmp(s.subs{2},':')
+                        n2 = n1;
+                    end
+                    opVar1 = subsref(op1.opVar,t);
+                    opVar1 = reshape(opVar1,[m2,n2,d1,w1]);
+                    coeff1 = subsref(op1.coeff,t);
+                    coeff1 = reshape(coeff1,[m2,n2,d1]);
+                 elseif length(s.subs)==1
+                     m2 = length(s.subs{1});
+                     if strcmp(s.subs{1},':')
+                         m2 = numel(op1);
+                     end
+                     opVar1 = subsref(reshape(op1.opVar,m1*n1,d1,w1),t);
+                     opVar1 = reshape(opVar1,[m2,1,d1,w1]);
+                     coeff1 = subsref(reshape(op1.coeff,m1*n1,d1),t);
+                     coeff1 = reshape(coeff1,[m2,1,d1]);
                  else
-                    % Use built-in for any other expression
-                    [varargout{1:nargout}] = builtin('subsref',op1,s);
-                 end
+                     error('Indexing not supported. a(1) or a(1,2)')
+                 end                     
+                 varargout{1} = lava(opVar1,coeff1);
                otherwise
                  error('Invalid indexing expression.')
            end
