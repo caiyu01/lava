@@ -203,7 +203,13 @@ classdef lava
                     % We apply one step
                     varargout{1} = subsref(varargout{1}, s(1));
                     % and then call the function again with the rest
-                    varargout{1} = subsref(varargout{1}, s(2:end));
+                    if length(s) == 2
+                        % final call, we keep all required outputs
+                        [varargout{1:nargout}] = subsref(varargout{1}, s(2:end));
+                    else
+                        % not the final call, we only keep one output
+                        varargout{1} = subsref(varargout{1}, s(2:end));
+                    end
                     return;
                 end
             end
@@ -215,12 +221,12 @@ classdef lava
                   if length(s) == 1
                       % a.opVar, a.coeff or a.method
                       prop = s(1).subs;
-                      varargout{1} = op1.(prop);
+                      [varargout{1:nargout}] = op1.(prop);
                   elseif (length(s) == 2) && isequal(s(2).type, '()')
                       % a.something(b)
                       prop = s(1).subs;
                       arguments = s(2).subs{:};
-                      varargout{1} = op1.(prop)(arguments);
+                      [varargout{1:nargout}] = op1.(prop)(arguments);
                   else
                       error('invalid indexing expression');
                   end
