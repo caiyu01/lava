@@ -201,14 +201,14 @@ classdef lava
                 % sequentially.
                 if ~(isequal(s(1).type, '.') && isequal(s(2).type, '()'))
                     % We apply one step
-                    varargout{1} = subsref(varargout{1}, s(1));
+                    op2 = subsref(op1, s(1));
                     % and then call the function again with the rest
-                    if length(s) == 2
-                        % final call, we keep all required outputs
-                        [varargout{1:nargout}] = subsref(varargout{1}, s(2:end));
-                    else
+                    if length(s) > 2
                         % not the final call, we only keep one output
-                        varargout{1} = subsref(varargout{1}, s(2:end));
+                        varargout{1} = subsref(op2, s(2:end));
+                    else
+                        % final call, we keep all required outputs
+                        [varargout{1:nargout}] = subsref(op2, s(2:end));
                     end
                     return;
                 end
