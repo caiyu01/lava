@@ -843,6 +843,33 @@ classdef lava
         end
 
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        %    Hierarchy relaxation operations
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+        function [opOut, selectedVariables] = localize(op1, list)
+            % This function returns a matrix that localizes the matrix or
+            % polynomial defined in 'op1'. The basis used to define the
+            % localizing matrix is formed by the constant '1' and the
+            % variables present in 'list'. These variables are ordered and
+            % duplicates removed. The second output 'selectedVariables'
+            % returns these variables in the order used.
+            %
+            % Note: The order of the element
+            %
+            % Example:
+            %     x1 = lava(1);
+            %     op1 = x1*x1;
+            %     list = [x1, x1*x1, x1*x1*x1]
+            %
+            % See also:
+            %     lava.uniqueVar
+            
+            selectedVariables = uniqueVar(lava(0), list);
+            base = selectedVariables*selectedVariables';
+            opOut = kron(base, op1);
+        end
+        
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         %    other operations
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         
