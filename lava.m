@@ -756,7 +756,11 @@ classdef lava
                             end
                         end
                     end
-                    result{i,j} = text(4:end-3);
+                    if length(text) > 6
+                        result{i,j} = text(4:end-3);
+                    else
+                        result{i,j} = '0';
+                    end
                 end
             end
         end
