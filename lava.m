@@ -782,7 +782,8 @@ classdef lava
                     text = ' + ';
                     for k = 1:size(op1.opVar,3)
                         if (op1.coeff(i,j,k) ~= 0)
-                            if op1.coeff(i,j,k) < 0
+                            if (isreal(op1.coeff(i,j,k)) && (op1.coeff(i,j,k) < 0)) || ...
+                               (isreal(1i*op1.coeff(i,j,k)) && (-1i*op1.coeff(i,j,k) < 0))
                                 % correct the sign
                                 text = [text(1:end-2), '- '];
                             end
@@ -791,9 +792,22 @@ classdef lava
                                 text = [text, num2str(abs(op1.coeff(i,j,k))), ' + '];
                             else
                                 % some operators are involved
-                                if abs(op1.coeff(i,j,k)) ~= 1
-                                    % write the coefficient if not unity
-                                    text = [text, num2str(abs(op1.coeff(i,j,k))), '*'];
+                                if isreal(op1.coeff(i,j,k))
+                                    % purely real coefficient
+                                    if abs(op1.coeff(i,j,k) ~= 1)
+                                        % write the coefficient if not unity
+                                        text = [text, num2str(abs(op1.coeff(i,j,k))), '*'];
+                                    end
+                                elseif isreal(1i*op1.coeff(i,j,k))
+                                    % purely imaginary coefficient
+                                    if abs(op1.coeff(i,j,k) ~= 1)
+                                        % write the coefficient if not unity
+                                        text = [text, num2str(abs(op1.coeff(i,j,k))), 'i*'];
+                                    end
+                                else
+                                    % both real and imaginary
+                                    % coefficients
+                                    text = [text, '(', num2str(op1.coeff(i,j,k)), ')*'];
                                 end
 
                                 ops = [0 squeeze(op1.opVar(i,j,k,:))' 0];
