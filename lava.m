@@ -196,20 +196,34 @@ classdef lava
             % a(1).opVar, a(1,2).coeff (not squeezed, 4-D or 3-D)
             
             if length(s) > 1
-                varargout{1} = op1;
-                for i = 1:length(s)
-                    varargout{1} = subsref(varargout{1},s(i));
+                % We only need to treat the case a.something(b) in one
+                % shot, all other cases, like a.b.c or a(b).c are treated
+                % sequentially.
+                if ~(isequal(s(1).type, '.') && isequal(s(2).type, '()'))
+                    % We apply one step
+                    varargout{1} = subsref(varargout{1}, s(1));
+                    % and then call the function again with the rest
+                    varargout{1} = subsref(varargout{1}, s(2:end));
+                    return;
                 end
-                return;
             end
             
-            assert(length(s) == 1);
-            % Now we can have only one subsref level
+            % Now we can have only one subsref level, or the pattern is
+            % something like a.b(c)
             switch s(1).type
               case '.'
-                 % a.opVar, a.coeff or a.method
-                 prop = s(1).subs;
-                 varargout{1} = op1.(prop);
+                  if length(s) == 1
+                      % a.opVar, a.coeff or a.method
+                      prop = s(1).subs;
+                      varargout{1} = op1.(prop);
+                  elseif (length(s) == 2) && isequal(s(2).type, '()')
+                      % a.something(b)
+                      prop = s(1).subs;
+                      arguments = s(2).subs{:};
+                      varargout{1} = op1.(prop)(arguments);
+                  else
+                      error('invalid indexing expression');
+                  end
               case '()'
                  % example a(1)
                  [m1, n1, d1, w1] = size(op1);
