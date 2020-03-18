@@ -831,6 +831,10 @@ classdef lava
             coeff1 = reshape(permute(reshape(coeff1,d1,n1,m1),[3 2 1]),m1,n1,d1);
 %             idx = sum(abs(opVar1),1)==0;
             idx = prod(opVar1==0,1) == 1;
+            % We always keep at least a width of 1
+            if isequal(idx, ones(1,w1))
+                idx(1) = 0;
+            end
             opVar1(:,idx) = [];
             % new maxWidth
             w1 = size(opVar1,2);
