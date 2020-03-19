@@ -179,11 +179,11 @@ classdef lava
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         
         % Squeezed operators and coefficients access
-        function result = sOpVar(op1)
+        function result = sqOpVar(op1)
             result = squeeze(op1.opVar);
         end
         
-        function result = sCoeff(op1)
+        function result = sqCoeff(op1)
             result = squeeze(op1.coeff);
         end
         
@@ -191,7 +191,7 @@ classdef lava
         function varargout = subsref(op1,s)
             % Supported indexing
             % a.opVar, a.coeff
-            % a.opVar(1), a.opVar(1,1) (not squeezed, use a(1,1).sOpVar for squeezed opVars!)
+            % a.opVar(1), a.opVar(1,1) (not squeezed, use a(1,1).sqOpVar for squeezed opVars!)
             % a(1), a(1,2), a(1,:)
             % a(1).opVar, a(1,2).coeff (not squeezed, 4-D or 3-D)
             
