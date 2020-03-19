@@ -75,7 +75,7 @@ classdef lavacons
         % Yalmip interface
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         
-        function [sol, Fv, objv] = solvesdp(varargin)
+        function [sol, Fv, objv] = optimize(varargin)
             t = tic;
             assert(nargin >= 2);
             if isa(varargin{2}, 'lavacons')
@@ -85,7 +85,10 @@ classdef lavacons
             assert(isa(varargin{2}, 'lava'));
             F = varargin{1};
             obj = varargin{2};
-            rest = varargin(3:end);
+            options = [];
+            if nargin >= 3
+                options = varargin{3};
+            end
             
             % First, we translate all lava objects into SDP variables
             nbConstr = length(F.cons);
@@ -114,11 +117,7 @@ classdef lavacons
             tlava = toc(t);
             
             % Solve the problem through yalmip
-            if nargin > 2
-                sol = solvesdp(Fv, objv, rest);
-            else
-                sol = solvesdp(Fv, objv);
-            end
+            sol = optimize(Fv, objv, options);
             
             sol.lavatime = tlava;
         end
