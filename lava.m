@@ -145,6 +145,7 @@ classdef lava
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         % size and numel
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        
         function varargout = size(op,varargin)
             % return all four dimensions
             % size(op,3) = maxDepth; size(op,4) = maxWidth;

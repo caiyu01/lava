@@ -19,6 +19,11 @@ classdef lavacons
             result.cons = {struct('lhs', lhs, 'rel', relation, 'rhs', rhs)};
         end
         
+        
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        % Concatenation
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
         % concatenation of multiple constraints
         function result = horzcat(varargin)
             result = varargin{1}; % we want to return a lavacons object
@@ -33,19 +38,24 @@ classdef lavacons
         function result = vertcat(varargin)
             result = horzcat(varargin);
         end
+        
+        
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        % Display
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
         % disp
         function disp(cons1)
             if numel(cons1.cons) == 1
-                disp('Polynomial constraint:')
+                disp('1 Polynomial constraint:')
             else
-                disp('Polynomial constraints:')
+                disp([num2str(numel(cons1.cons)), ' Polynomial constraints:']);
             end
             
             for i = 1:numel(cons1.cons)
                 dim1 = max(size(cons1.cons{i}.lhs,1), size(cons1.cons{i}.rhs,1));
                 dim2 = max(size(cons1.cons{i}.lhs,2), size(cons1.cons{i}.rhs,2));
-                text = [num2str(dim1), 'x', num2str(dim2), ' '];
+                text = ['  ', num2str(i), ' : ', num2str(dim1), 'x', num2str(dim2), ' '];
                 switch cons1.cons{i}.rel
                     case '<='
                         text = [text, 'inequality <='];
@@ -53,11 +63,66 @@ classdef lavacons
                         text = [text, 'equality'];
                     case '>='
                         text = [text, 'inequality >='];
+                    otherwise
+                        error('Unknown relation');
                 end
                 disp(text);
             end
         end
-           
+
+        
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        % Yalmip interface
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        
+        function [sol, Fv, objv] = solvesdp(varargin)
+            t = tic;
+            assert(nargin >= 2);
+            if isa(varargin{2}, 'lavacons')
+                error('Constraints should be put as the first parameter of solvesdp.');
+            end
+            assert(isa(varargin{1}, 'lavacons'));
+            assert(isa(varargin{2}, 'lava'));
+            F = varargin{1};
+            obj = varargin{2};
+            rest = varargin(3:end);
+            
+            % First, we translate all lava objects into SDP variables
+            nbConstr = length(F.cons);
+            lhs = cell(1,nbConstr);
+            rhs = cell(1,nbConstr);
+            for i = 1:nbConstr
+                lhs{i} = F.cons{i}.lhs;
+                rhs{i} = F.cons{i}.rhs;
+            end
+            
+            [objv, lhsv, rhsv] = assignSdpVar(obj, lhs, rhs);
+
+            Fv = [];
+            for i = 1:nbConstr
+                switch F.cons{i}.rel
+                    case '<='
+                        Fv = [Fv, lhsv{i} <= rhsv{i}];
+                    case '=='
+                        Fv = [Fv, lhsv{i} == rhsv{i}];
+                    case '>='
+                        Fv = [Fv, lhsv{i} >= rhsv{i}];
+                    otherwise
+                        error('Unknown relation');
+                end
+            end
+            tlava = toc(t);
+            
+            % Solve the problem through yalmip
+            if nargin > 2
+                sol = solvesdp(Fv, objv, rest);
+            else
+                sol = solvesdp(Fv, objv);
+            end
+            
+            sol.lavatime = tlava;
+        end
+        
     end
 
 end
