@@ -654,6 +654,11 @@ classdef lava
             result = isequal(op1, op1.ctranspose);
         end
         
+        
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        %    basic matrix manipulations
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        
         % reshape
         function result = reshape(op1, varargin)
             if length(varargin)==1
@@ -779,67 +784,10 @@ classdef lava
             end
         end
         
-%         function opOut = setKron(op1,op2)
-%             % set kronecker, for generating higher order relaxations
-%             % only concerns the opVar, coeff are set to 1!
-%             % disregards the size of inputs, only the unique list of opVars
-%             % returns a row lava
-%             % op = setKron(lava1,lava2)
-%             op3 = kron(op1,op2);
-%             opVar1 = uniquecell([op3.opVar]);
-%             opOut = lava(opVar1(:))'; % all coefficients are real, so ' is ok
-%         end
         
-        function out = uniqueVar(varargin)
-            % from several lava objects
-            % returns the list of unique variables
-            % either in a lava objects (default)
-            % or a unique list (n-by-width) array
-            % example: a = lava([1 2 3])
-            %          out = uniqueVar(a,kron(a,a));
-            %          out = uniqueVar(a,kron(a,a),'array');
-            
-            maxWidth = 1;
-            list = [];
-            if strcmp(varargin{end},'array')
-                for ii=1:nargin-1
-                    % Make sure this is a lava object
-                    if ~isa(varargin{ii}, 'lava')
-                        varargin{ii} = lava.num2lava(varargin{ii});
-                    end
-                    [~,~,~,w] = size(varargin{ii});
-                    opVar1 = varargin{ii}.opVar;
-                    tmp = reshape(opVar1,numel(opVar1)/w,w);
-                    if w<maxWidth
-                        tmp = [zeros(size(tmp,1),maxWidth-w) tmp];
-                    elseif w>maxWidth
-                        list = [zeros(size(list,1),w-maxWidth) list];
-                        maxWidth = w;
-                    end
-                    list = unique([list; tmp],'rows');
-                end
-                out = list;
-                return;
-            else
-                for ii=1:nargin
-                    [~,~,~,w] = size(varargin{ii});
-                    % Make sure this is a lava object
-                    if ~isa(varargin{ii}, 'lava')
-                        varargin{ii} = lava.num2lava(varargin{ii});
-                    end
-                    opVar1 = varargin{ii}.opVar;
-                    tmp = reshape(opVar1,numel(opVar1)/w,w);
-                    if w<maxWidth
-                        tmp = [zeros(size(tmp,1),maxWidth-w) tmp];
-                    elseif w>maxWidth
-                        list = [zeros(size(list,1),w-maxWidth) list];
-                        maxWidth = w;
-                    end
-                    list = unique([list; tmp],'rows');
-                end
-                out = lava(mat2cell(list,ones(1,size(list,1)),w));
-            end
-        end
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        %    display functions
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         
         % toStr
         function result = toStr(op1)
@@ -955,6 +903,7 @@ classdef lava
             end
         end
 
+        
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         %    Hierarchy relaxation operations
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -989,6 +938,7 @@ classdef lava
             base = selectedVariables*selectedVariables';
             opOut = kron(base, op1);
         end
+        
         
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         %    other operations
@@ -1060,10 +1010,62 @@ classdef lava
             opOut = lava(reshape(opVar1,m1,n1,d1,w1),coeff1);
         end
         
-    end
-    
-     methods 
          
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        %    basic variable-related operations
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+        function out = uniqueVar(varargin)
+            % from several lava objects
+            % returns the list of unique variables
+            % either in a lava objects (default)
+            % or a unique list (n-by-width) array
+            % example: a = lava([1 2 3])
+            %          out = uniqueVar(a,kron(a,a));
+            %          out = uniqueVar(a,kron(a,a),'array');
+            
+            maxWidth = 1;
+            list = [];
+            if strcmp(varargin{end},'array')
+                for ii=1:nargin-1
+                    % Make sure this is a lava object
+                    if ~isa(varargin{ii}, 'lava')
+                        varargin{ii} = lava.num2lava(varargin{ii});
+                    end
+                    [~,~,~,w] = size(varargin{ii});
+                    opVar1 = varargin{ii}.opVar;
+                    tmp = reshape(opVar1,numel(opVar1)/w,w);
+                    if w<maxWidth
+                        tmp = [zeros(size(tmp,1),maxWidth-w) tmp];
+                    elseif w>maxWidth
+                        list = [zeros(size(list,1),w-maxWidth) list];
+                        maxWidth = w;
+                    end
+                    list = unique([list; tmp],'rows');
+                end
+                out = list;
+                return;
+            else
+                for ii=1:nargin
+                    [~,~,~,w] = size(varargin{ii});
+                    % Make sure this is a lava object
+                    if ~isa(varargin{ii}, 'lava')
+                        varargin{ii} = lava.num2lava(varargin{ii});
+                    end
+                    opVar1 = varargin{ii}.opVar;
+                    tmp = reshape(opVar1,numel(opVar1)/w,w);
+                    if w<maxWidth
+                        tmp = [zeros(size(tmp,1),maxWidth-w) tmp];
+                    elseif w>maxWidth
+                        list = [zeros(size(list,1),w-maxWidth) list];
+                        maxWidth = w;
+                    end
+                    list = unique([list; tmp],'rows');
+                end
+                out = lava(mat2cell(list,ones(1,size(list,1)),w));
+            end
+        end
+        
         % read out to variable index
         function [maxWidth, maxBase, uniqueIdx, varargout] = assignVarIdx(varargin)
             % [maxWidth, maxBase, uniqueIdx, varIdxCell] = assignVarIdx(lava1, lava2, {lava3, lava4},...)
@@ -1158,6 +1160,11 @@ classdef lava
             varargout = varIdxCell;
         end
         
+        
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        %    Yalmip bridge operations
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
         function [varargout] = assignSdpVar(varargin)
             % return sdp matrices, also the sparse variable vSp
             % in the same structure as varargin
