@@ -794,13 +794,13 @@ classdef lava
                                 % some operators are involved
                                 if isreal(op1.coeff(i,j,k))
                                     % purely real coefficient
-                                    if abs(op1.coeff(i,j,k) ~= 1)
+                                    if abs(op1.coeff(i,j,k)) ~= 1
                                         % write the coefficient if not unity
                                         text = [text, num2str(abs(op1.coeff(i,j,k))), '*'];
                                     end
                                 elseif isreal(1i*op1.coeff(i,j,k))
                                     % purely imaginary coefficient
-                                    if abs(op1.coeff(i,j,k) ~= 1)
+                                    if abs(op1.coeff(i,j,k)) ~= 1
                                         % write the coefficient if not unity
                                         text = [text, num2str(abs(op1.coeff(i,j,k))), 'i*'];
                                     end
@@ -837,7 +837,12 @@ classdef lava
                         end
                     end
                     if length(text) > 6
-                        result{i,j} = text(4:end-3);
+                        if isequal(text(2), '+')
+                            % We don't print the initial plus sign
+                            result{i,j} = text(4:end-3);
+                        else
+                            result{i,j} = text(2:end-3);
+                        end
                     else
                         result{i,j} = '0';
                     end
@@ -846,10 +851,46 @@ classdef lava
         end
         
         % display
+        function display(op1)
+            if ~isempty(inputname(1))
+                % We have a variable name so we print it
+                disp(' ');
+                disp([inputname(1), ' = ']);
+                disp(' ');
+            end
+            disp(op1);
+        end
+        
+        % disp
         function disp(op1,str1)
-            if nargin==2 && strcmp(str1,'full')
+            niceDisplay = (nargin==2 && strcmp(str1,'full')) ...
+                          || (numel(op1) <= 10);
+            
+            if niceDisplay
+                disp(['  ', num2str(size(op1,1)), 'x', num2str(size(op1,2)), ' lava array:']);
+                disp(' ');
+                
                 % possibly better display
-                ...
+                cellDescription = op1.toStr;
+                
+                % Finds the longest string in each column
+                colLen = zeros(1, size(op1,2));
+                for i = 1:size(op1,1)
+                    for j = 1:size(op1,2)
+                        colLen(j) = max(colLen(j), length(cellDescription{i,j}));
+                    end
+                end
+                colLen = colLen + 2;
+                
+                % print each element
+                for i = 1:size(op1,1)
+                    text = '    ';
+                    for j = 1:size(op1,2)
+                        text = [text, cellDescription{i,j}];
+                        text = [text, char(kron(' ', ones(1, colLen(j)-length(cellDescription{i,j}))))];
+                    end
+                    disp(text);
+                end
             else
                 % just the default display
                 builtin('disp',op1);
