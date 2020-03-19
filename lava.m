@@ -919,17 +919,6 @@ classdef lava
             end
         end
         
-        % display
-        function display(op1)
-            if ~isempty(inputname(1))
-                % We have a variable name so we print it
-                disp(' ');
-                disp([inputname(1), ' = ']);
-                disp(' ');
-            end
-            disp(op1);
-        end
-        
         % disp
         function disp(op1,str1)
             niceDisplay = (nargin==2 && strcmp(str1,'full')) ...
