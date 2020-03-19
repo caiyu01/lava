@@ -347,7 +347,16 @@ classdef lava
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         
         function opOut = plus(op1,op2)
-        % addition
+            % addition
+            
+            % Make sure both object are lava objects
+            if ~isa(op1, 'lava')
+                op1 = lava.num2lava(op1);
+            end
+            if ~isa(op2, 'lava')
+                op2 = lava.num2lava(op2);
+            end
+        
             [m1, n1, d1, w1] = size(op1);
             [m2, n2, d2, w2] = size(op2);
             % in case one of them is empty
@@ -429,6 +438,11 @@ classdef lava
         % minus
         function opOut = minus(op1,op2)
             opOut = op1 + -1.*op2;
+        end
+        
+        % uminus
+        function opOut = uminus(op1)
+            opOut = -1.*op1;
         end
         
         % mtimes
@@ -672,8 +686,18 @@ classdef lava
             if nargin>2
                 result = horzcat(varargin{1},horzcat(varargin{2:end}));
             elseif nargin==2
+                % Make sure both object are lava objects
+                op1 = varargin{1};
+                op2 = varargin{2};
+                if ~isa(op1, 'lava')
+                    op1 = lava.num2lava(op1);
+                end
+                if ~isa(op2, 'lava')
+                    op2 = lava.num2lava(op2);
+                end
+
                 % need to standardize the width and depth
-                [op1, op2] = matchSize(varargin{1},varargin{2});
+                [op1, op2] = matchSize(op1,op2);
                 s.type = '.';
                 s.subs = 'opVar';
                 opVar1 = subsref(op1,s);
@@ -697,6 +721,16 @@ classdef lava
             if nargin>2
                 result = horzcat(varargin{1},horzcat(varargin{2:end}));
             elseif nargin==2
+                % Make sure both object are lava objects
+                op1 = varargin{1};
+                op2 = varargin{2};
+                if ~isa(op1, 'lava')
+                    op1 = lava.num2lava(op1);
+                end
+                if ~isa(op2, 'lava')
+                    op2 = lava.num2lava(op2);
+                end
+                
                 % need to standardize the width and depth
                 [op1, op2] = matchSize(varargin{1},varargin{2});
                 s.type = '.';
@@ -742,6 +776,10 @@ classdef lava
             list = [];
             if strcmp(varargin{end},'array')
                 for ii=1:nargin-1
+                    % Make sure this is a lava object
+                    if ~isa(varargin{ii}, 'lava')
+                        varargin{ii} = lava.num2lava(varargin{ii});
+                    end
                     [~,~,~,w] = size(varargin{ii});
                     opVar1 = varargin{ii}.opVar;
                     tmp = reshape(opVar1,numel(opVar1)/w,w);
@@ -758,6 +796,10 @@ classdef lava
             else
                 for ii=1:nargin
                     [~,~,~,w] = size(varargin{ii});
+                    % Make sure this is a lava object
+                    if ~isa(varargin{ii}, 'lava')
+                        varargin{ii} = lava.num2lava(varargin{ii});
+                    end
                     opVar1 = varargin{ii}.opVar;
                     tmp = reshape(opVar1,numel(opVar1)/w,w);
                     if w<maxWidth
@@ -919,6 +961,14 @@ classdef lava
             % See also:
             %     lava.uniqueVar
             
+            % Make sure both inputs are lava object
+            if ~isa(op1, 'lava')
+                op1 = lava.num2lava(op1);
+            end
+            if ~isa(list, 'lava')
+                list = lava.num2lava(list);
+            end
+
             selectedVariables = uniqueVar(lava(0), list);
             base = selectedVariables*selectedVariables';
             opOut = kron(base, op1);
@@ -1007,18 +1057,19 @@ classdef lava
             for ii=1:nargin
                 if iscell(varargin{ii})
                     for jj = 1:numel(varargin{ii})
-                        if isa(varargin{ii}{jj},'lava')
-                            input{co} = varargin{ii}{jj};
-                            co = co+1;
-                        else
-                            error('Invalid input. Must be lava or cell of lavas')
-                        end
+                        input{co} = varargin{ii}{jj};
+                        co = co+1;
                     end
-                elseif isa(varargin{ii},'lava')
+                else
                     input{co} = varargin{ii};
                     co = co+1;
-                else
-                    error('Invalid input. Must be lava or cell of lavas')
+                end
+            end
+            
+            % Make sure all inputs are lava object
+            for i = 1:length(input)
+                if ~isa(input{i}, 'lava')
+                    input{i} = lava.num2lava(input{i});
                 end
             end
             
