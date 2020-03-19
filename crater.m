@@ -1,5 +1,6 @@
-classdef lavacons
-% Object describing a set of Constraints on LAserre VAriables
+classdef crater
+% Lava lakes are contained in volcanic craters.
+% This object describes constraints on LAsserre VAriables
 
     properties
         cons % constraints
@@ -7,7 +8,7 @@ classdef lavacons
     
     methods
         % Constructor for a single constaint
-        function result = lavacons(lhs, relation, rhs)
+        function result = crater(lhs, relation, rhs)
             if ~isa(lhs, 'lava')
                 lhs = lava.num2lava(lhs);
             end
@@ -26,10 +27,10 @@ classdef lavacons
 
         % concatenation of multiple constraints
         function result = horzcat(varargin)
-            result = varargin{1}; % we want to return a lavacons object
+            result = varargin{1}; % we want to return a crater object
             result.cons = {};     % reinitialization
             for i = 1:nargin
-                assert(isa(varargin{i}, 'lavacons'));
+                assert(isa(varargin{i}, 'crater'));
                 result.cons = [result.cons, varargin{i}.cons];
             end
         end
@@ -78,10 +79,10 @@ classdef lavacons
         function [sol, Fv, objv] = optimize(varargin)
             t = tic;
             assert(nargin >= 2);
-            if isa(varargin{2}, 'lavacons')
+            if isa(varargin{2}, 'crater')
                 error('Constraints should be put as the first parameter of solvesdp.');
             end
-            assert(isa(varargin{1}, 'lavacons'));
+            assert(isa(varargin{1}, 'crater'));
             assert(isa(varargin{2}, 'lava'));
             F = varargin{1};
             obj = varargin{2};

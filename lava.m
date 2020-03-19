@@ -1232,7 +1232,7 @@ classdef lava
                 op2 = lava.num2lava(op2);
             end
             
-            constraint = lavacons(op1, '==', op2);
+            constraint = crater(op1, '==', op2);
         end
         
         % <= constraint
@@ -1245,7 +1245,7 @@ classdef lava
                 op2 = lava.num2lava(op2);
             end
             
-            constraint = lavacons(op1, '<=', op2);
+            constraint = crater(op1, '<=', op2);
         end
         
         % >= constraint
@@ -1258,7 +1258,7 @@ classdef lava
                 op2 = lava.num2lava(op2);
             end
             
-            constraint = lavacons(op1, '>=', op2);
+            constraint = crater(op1, '>=', op2);
         end
         
         % < constraint
