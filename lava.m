@@ -539,11 +539,28 @@ classdef lava
         end
         
         % kronecker
-        function opOut = kron(op1,op2)
+        function opOut = kron(varargin)
             % kronecker product between
             % a double matrix with a lava matrix
             % a lava matrix with a double matrix
             % or two lava matrices
+            % or more than two objects
+            
+            if nargin < 2
+                error('Not enough arguments');
+            elseif nargin > 2
+                opOut = varargin{1};
+                for i = 2:nargin
+                    opOut = kron(opOut, varargin{i});
+                end
+                return;
+            end
+            
+            assert(nargin == 2);
+            % If we are here we have exactly two arguments
+            op1 = varargin{1};
+            op2 = varargin{2};
+            
             if isa(op1,'double') && isa(op2,'lava')
                 op1 = lava(zeros(size(op1)),op1);
                 opOut = kron(op1,op2);
