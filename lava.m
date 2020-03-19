@@ -1220,6 +1220,56 @@ classdef lava
             end
             varargout = [varargout {vSp}];
         end
+        
+        % Equality constraint
+        function constraint = eq(op1, op2)
+            % Make sure both object are lava objects
+            if ~isa(op1, 'lava')
+                op1 = lava.num2lava(op1);
+            end
+            if ~isa(op2, 'lava')
+                op2 = lava.num2lava(op2);
+            end
+            
+            constraint = lavacons(op1, '==', op2);
+        end
+        
+        % <= constraint
+        function constraint = le(op1, op2)
+            % Make sure both object are lava objects
+            if ~isa(op1, 'lava')
+                op1 = lava.num2lava(op1);
+            end
+            if ~isa(op2, 'lava')
+                op2 = lava.num2lava(op2);
+            end
+            
+            constraint = lavacons(op1, '<=', op2);
+        end
+        
+        % >= constraint
+        function constraint = ge(op1, op2)
+            % Make sure both object are lava objects
+            if ~isa(op1, 'lava')
+                op1 = lava.num2lava(op1);
+            end
+            if ~isa(op2, 'lava')
+                op2 = lava.num2lava(op2);
+            end
+            
+            constraint = lavacons(op1, '>=', op2);
+        end
+        
+        % < constraint
+        function constraint = lt(op1, op2)
+            constraint = le(op1, op2);
+        end
+        
+        % > constraint
+        function constraint = gt(op1, op2)
+            constraint = ge(op1, op2);
+        end
+        
      end
      
      methods(Static)
@@ -1262,8 +1312,6 @@ classdef lava
             end
 
             end
-
-
         
          % static methods...
 %          function M = buildLasserreMatrix(basisOp, coreOp)
