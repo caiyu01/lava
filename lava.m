@@ -609,6 +609,16 @@ classdef lava
             opOut = lava(opVar1,coeff1);
         end
         
+        
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        %    basic tests
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        
+        % test if object is real
+        function result = isreal(op1)
+            result = isreal(op1.coeff);
+        end
+        
         % test if the object is a scalar
         function result = isscalar(op1)
             % Returns true iff op1 is 1x1 and a constant (i.e. involves no
