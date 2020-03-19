@@ -521,7 +521,7 @@ classdef lava
                 error('Operation only implemented on scalars');
             end
             
-            npOut = power(op1,exponent);
+            opOut = power(op1,exponent);
         end
         
         % kronecker
