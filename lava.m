@@ -859,7 +859,7 @@ classdef lava
                             % We don't print the initial plus sign
                             result{i,j} = text(4:end-3);
                         else
-                            result{i,j} = text(2:end-3);
+                            result{i,j} = [text(2), text(4:end-3)];
                         end
                     else
                         result{i,j} = '0';
