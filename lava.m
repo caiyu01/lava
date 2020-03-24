@@ -1077,7 +1077,7 @@ classdef lava
             
             if strcmp(varargin{end},'array')
                 maxWidth = 1;
-                list = [];
+                list = zeros(0,1);
                 for ii=1:nargin-1
                     % Make sure this is a lava object
                     if ~isa(varargin{ii}, 'lava')
