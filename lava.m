@@ -1058,6 +1058,9 @@ classdef lava
             
             % and finally keep only one copy of each unique element
             s = size(op.opVar);
+            if length(s) < 4
+                s(end+1:4) = 1;
+            end
             table = [reshape(op.opVar, s(1)*s(2), s(3)*s(4)), reshape(op.coeff, s(1)*s(2), s(3))];
             uniques = unique(table, 'rows');
             
