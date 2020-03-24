@@ -838,7 +838,10 @@ classdef lava
                                     end
                                 elseif isreal(1i*op1.coeff(i,j,k))
                                     % purely imaginary coefficient
-                                    if abs(op1.coeff(i,j,k)) ~= 1
+                                    if abs(op1.coeff(i,j,k)) == 1
+                                        % write just 1i if unity
+                                        text = [text, '1i*'];
+                                    else
                                         % write the coefficient if not unity
                                         text = [text, num2str(abs(op1.coeff(i,j,k))), 'i*'];
                                     end
