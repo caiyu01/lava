@@ -117,7 +117,7 @@ classdef lava
                             opOut.coeff(:,:,1,1) = coeff;
                         elseif ~ismatrix(opVar) % && ~ismatrix(coeff)
                             % in case some dimensions has length 1
-                            if size(opVar,1)==1 || size(opVar,2)==1
+                            if (size(opVar,1)==1 || size(opVar,2)==1) && (numel(coeff) > 0)
                                 coeff = reshape(coeff,size(opVar,1),size(opVar,2),numel(coeff)/(size(opVar,1)*size(opVar,2)));
                             end
                             if size(opVar,1)~=size(coeff,1) || size(opVar,2)~=size(coeff,2)
@@ -137,7 +137,7 @@ classdef lava
                     else
                         error('Invalid input. Input should have the same type.')
                     end                     
-            otherwise
+                otherwise
                     error('Invalid input.')
             end
         end
@@ -680,38 +680,38 @@ classdef lava
         
         % match sizes
         function [op1, op2] = matchSize(op1,op2)
-                [m1,n1,d1,w1] = size(op1);
-                [m2,n2,d2,w2] = size(op2);
-                opVar1 = op1.opVar; coeff1 = op1.coeff;
-                opVar2 = op2.opVar; coeff2 = op2.coeff;
-                if d1<d2
-                    opVar1 = reshape(permute(reshape(opVar1,m1,n1,d1,w1),[3 1 2 4]),d1,m1*n1*w1);
-                    opVar1 = [zeros(d2-d1,m1*n1*w1); opVar1];
-                    opVar1 = reshape(permute(reshape(opVar1,d2,m1,n1, w1),[2 3 1 4]),m1,n1,d2,w1);
-                    coeff1 = reshape(permute(reshape(coeff1,m1,n1,d1),[3 1 2]),d1,m1*n1);
-                    coeff1 = [zeros(d2-d1,m1*n1); coeff1];
-                    coeff1 = reshape(permute(reshape(coeff1,d2,m1,n1),[2 3 1]),m1,n1,d2);
-                    d1 = d2;
-                elseif d2<d1
-                    opVar2 = reshape(permute(reshape(opVar2,m2,n2,d2,w2),[3 1 2 4]),d2,m2*n2*w2);
-                    opVar2 = [zeros(d1-d2,m2*n2*w2); opVar2];
-                    opVar2 = reshape(permute(reshape(opVar2,d1,m2,n2, w2),[2 3 1 4]),m2,n2,d1,w2);
-                    coeff2 = reshape(permute(reshape(coeff2,m2,n2,d2),[3 1 2]),d2,m2*n2);
-                    coeff2 = [zeros(d1-d2,m2*n2); coeff2];
-                    coeff2 = reshape(permute(reshape(coeff2,d1,m2,n2),[2 3 1]),m2,n2,d1);
-                    d2 = d1;
-                end
-                if w1<w2
-                    opVar1 = reshape(opVar1,m1*n1*d1,w1);
-                    opVar1 = [zeros(m1*n1*d1,w2-w1) opVar1];
-                    opVar1 = reshape(opVar1,m1,n1,d1,w2);
-                elseif w2<w1
-                    opVar2 = reshape(opVar2,m2*n2*d2,w2);
-                    opVar2 = [zeros(m2*n2*d2,w1-w2) opVar2];
-                    opVar2 = reshape(opVar2,m2,n2,d2,w1);
-                end
-                op1 = lava(opVar1,coeff1);
-                op2 = lava(opVar2,coeff2);
+            [m1,n1,d1,w1] = size(op1);
+            [m2,n2,d2,w2] = size(op2);
+            opVar1 = op1.opVar; coeff1 = op1.coeff;
+            opVar2 = op2.opVar; coeff2 = op2.coeff;
+            if d1<d2
+                opVar1 = reshape(permute(reshape(opVar1,m1,n1,d1,w1),[3 1 2 4]),d1,m1*n1*w1);
+                opVar1 = [zeros(d2-d1,m1*n1*w1); opVar1];
+                opVar1 = reshape(permute(reshape(opVar1,d2,m1,n1, w1),[2 3 1 4]),m1,n1,d2,w1);
+                coeff1 = reshape(permute(reshape(coeff1,m1,n1,d1),[3 1 2]),d1,m1*n1);
+                coeff1 = [zeros(d2-d1,m1*n1); coeff1];
+                coeff1 = reshape(permute(reshape(coeff1,d2,m1,n1),[2 3 1]),m1,n1,d2);
+                d1 = d2;
+            elseif d2<d1
+                opVar2 = reshape(permute(reshape(opVar2,m2,n2,d2,w2),[3 1 2 4]),d2,m2*n2*w2);
+                opVar2 = [zeros(d1-d2,m2*n2*w2); opVar2];
+                opVar2 = reshape(permute(reshape(opVar2,d1,m2,n2, w2),[2 3 1 4]),m2,n2,d1,w2);
+                coeff2 = reshape(permute(reshape(coeff2,m2,n2,d2),[3 1 2]),d2,m2*n2);
+                coeff2 = [zeros(d1-d2,m2*n2); coeff2];
+                coeff2 = reshape(permute(reshape(coeff2,d1,m2,n2),[2 3 1]),m2,n2,d1);
+                d2 = d1;
+            end
+            if w1<w2
+                opVar1 = reshape(opVar1,m1*n1*d1,w1);
+                opVar1 = [zeros(m1*n1*d1,w2-w1) opVar1];
+                opVar1 = reshape(opVar1,m1,n1,d1,w2);
+            elseif w2<w1
+                opVar2 = reshape(opVar2,m2*n2*d2,w2);
+                opVar2 = [zeros(m2*n2*d2,w1-w2) opVar2];
+                opVar2 = reshape(opVar2,m2,n2,d2,w1);
+            end
+            op1 = lava(opVar1,coeff1);
+            op2 = lava(opVar2,coeff2);
         end
         
         % concatenation
@@ -729,6 +729,16 @@ classdef lava
                     op2 = lava.num2lava(op2);
                 end
 
+                % 0x0 or 0xd objects are the same
+                if (size(op1,1) == 0) && (size(op1,2) == 0) && (size(op2,1) ~= 0)
+                    % op1 is empty, matching size with op2
+                    op1 = lava(zeros(size(op2,1), 0), zeros(size(op2,1), 0));
+                end
+                if (size(op2,1) == 0) && (size(op2,2) == 0) && (size(op1,1) ~= 0)
+                    % op2 is empty, matching size with op1
+                    op2 = lava(zeros(size(op1,2), 0), zeros(size(op1,2), 0));
+                end
+                
                 % need to standardize the width and depth
                 [op1, op2] = matchSize(op1,op2);
                 s.type = '.';
@@ -764,8 +774,18 @@ classdef lava
                     op2 = lava.num2lava(op2);
                 end
                 
+                % 0x0 or 0xd objects are the same
+                if (size(op1,1) == 0) && (size(op1,2) == 0) && (size(op2,2) ~= 0)
+                    % op1 is empty, matching size with op2
+                    op1 = lava(zeros(0, size(op2,2)), zeros(0, size(op2,2)));
+                end
+                if (size(op2,1) == 0) && (size(op2,2) == 0) && (size(op1,2) ~= 0)
+                    % op2 is empty, matching size with op1
+                    op2 = lava(zeros(0, size(op1,2)), zeros(0, size(op1,2)));
+                end
+                
                 % need to standardize the width and depth
-                [op1, op2] = matchSize(varargin{1},varargin{2});
+                [op1, op2] = matchSize(op1,op2);
                 s.type = '.';
                 s.subs = 'opVar';
                 opVar1 = subsref(op1,s);
@@ -871,7 +891,7 @@ classdef lava
         % disp
         function disp(op1,str1)
             niceDisplay = (nargin==2 && strcmp(str1,'full')) ...
-                          || (numel(op1) <= 10);
+                          || ((size(op1.opVar,2)*size(op1.opVar,3)*size(op1.opVar,4) <= 100) && (size(op1,1) < 1000));
             
             if niceDisplay
                 disp(['  ', num2str(size(op1,1)), 'x', num2str(size(op1,2)), ' lava array:']);
