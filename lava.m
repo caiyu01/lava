@@ -1036,6 +1036,36 @@ classdef lava
         %    basic variable-related operations
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+        function out = unique(varargin)
+            % from several lava objects
+            % returns the list of unique elements
+            % example: a = lava([1 2 3])
+            %          out = unique(a,kron(a,a))
+            
+            % we concatenate all objects together
+            op = [];
+            allElements = struct('type', '()', 'subs', {{':'}});
+            for ii = 1:nargin
+                assert(isa(varargin{ii},'lava'));
+                op = [op; subsref(varargin{ii}, allElements)];
+            end
+            
+            % make sure all elements are in simplified form
+            op = simplify(op);
+            
+            % and finally keep only one copy of each unique element
+            s = size(op.opVar);
+            table = [reshape(op.opVar, s(1)*s(2), s(3)*s(4)), reshape(op.coeff, s(1)*s(2), s(3))];
+            uniques = unique(table, 'rows');
+            
+            % Creates the corresponding lava object
+            s2 = s;
+            s2(1) = size(uniques,1);
+            opVar = reshape(uniques(:,1:s2(3)*s2(4)), s2(1), s2(2), s2(3), s2(4));
+            coeff = reshape(uniques(:,s2(3)*s2(4)+1:end), s2(1)*s2(2), s2(3));
+            out = lava(opVar, coeff);
+        end
+        
         function out = uniqueVar(varargin)
             % from several lava objects
             % returns the list of unique variables
@@ -1168,7 +1198,7 @@ classdef lava
         
         
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        %    Yalmip bridge operations
+        %    Crater bridge operations
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
         function [varargout] = assignSdpVar(varargin)
