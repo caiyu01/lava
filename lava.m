@@ -1025,9 +1025,9 @@ classdef lava
             %          out = uniqueVar(a,kron(a,a));
             %          out = uniqueVar(a,kron(a,a),'array');
             
-            maxWidth = 1;
-            list = [];
             if strcmp(varargin{end},'array')
+                maxWidth = 1;
+                list = [];
                 for ii=1:nargin-1
                     % Make sure this is a lava object
                     if ~isa(varargin{ii}, 'lava')
@@ -1045,25 +1045,10 @@ classdef lava
                     list = unique([list; tmp],'rows');
                 end
                 out = list;
-                return;
             else
-                for ii=1:nargin
-                    [~,~,~,w] = size(varargin{ii});
-                    % Make sure this is a lava object
-                    if ~isa(varargin{ii}, 'lava')
-                        varargin{ii} = lava.num2lava(varargin{ii});
-                    end
-                    opVar1 = varargin{ii}.opVar;
-                    tmp = reshape(opVar1,numel(opVar1)/w,w);
-                    if w<maxWidth
-                        tmp = [zeros(size(tmp,1),maxWidth-w) tmp];
-                    elseif w>maxWidth
-                        list = [zeros(size(list,1),w-maxWidth) list];
-                        maxWidth = w;
-                    end
-                    list = unique([list; tmp],'rows');
-                end
-                out = lava(mat2cell(list,ones(1,size(list,1)),w));
+                % We construct the output from the unique array
+                list = uniqueVar(varargin{:},'array');
+                out = lava(mat2cell(list,ones(1,size(list,1)),size(list,2)));
             end
         end
         
