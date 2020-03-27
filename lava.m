@@ -168,6 +168,10 @@ classdef lava
             end
         end
         
+        function result = isempty(op)
+            result = any(size(op) == 0);
+        end
+        
         function n = numel(op)
             % only the first two matrix dimensions
             n = size(op,1)*size(op,2);
@@ -619,6 +623,18 @@ classdef lava
             opOut = lava(opVar1,coeff1);
         end
         
+        % trace
+        function opOut = trace(op1)
+            if size(op1,1) ~= size(op1,2)
+                error('Matrix must be square.');
+            end
+            
+            opOut = 0;
+            for i = 1:size(op1,1)
+                vect = [zeros(1,i-1) 1 zeros(1, size(op1,1)-i)]';
+                opOut = opOut + vect'*op1*vect;
+            end
+        end
         
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         %    basic tests
