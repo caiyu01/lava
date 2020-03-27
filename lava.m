@@ -46,15 +46,18 @@ classdef lava
         % formally this is a static method
         function opOut = lava(varargin)
         % constructs a lava object
-        % a = lava; % empty
-        % a = lava([1 2;3 4]); % specifies the variables, but coeff=1
-        % a = lava({[1 2] 2; 3 4},[1 1;-1 1i]); % specifies the variables
-        % and coefficients
+        %
+        % Examples:
+        %     a = lava  % empty
+        %     a = lava([1 2;3 4])  % specifies the variables, but coeff=1
+        %     a = lava([1 2;3 4], [1 1;-1 1i])  % specifies the variables and coefficients
+        %     a = lava({[1 5] 2;3 4}, {1 1;-1 1i})  % including a monomial of degree 2
+        %     a = lava({[1; 5] 2;3 4}, {[1; 2] 1;-1 1i})  % including a polynomial term
             switch nargin
                 case 0
                     % if coeff1 is not specified
-                    opOut = lava.empty; % size is zero
-                case 1 
+                    opOut = lava.num2lava([]); % size is zero
+                case 1
                     if ~iscell(varargin{1})
                         opVar = num2cell(varargin{1});
                     else
@@ -79,15 +82,19 @@ classdef lava
                             error('Wrong size. opVar and coeff must have same size.')
                         end
                         % wrap it into a 4-matrix
-                        % match every cell with the maximum width and depth
+                        % homogenize every cell element to have the maximum width and depth
                         for ii=1:numel(opVar)
                             if (size(opVar{ii},1)~=size(coeff{ii},1) || size(coeff{ii},2)~=1)... % if size does not match
                                     && ~isempty(opVar{ii}) && ~isempty(coeff{ii}) % and it is not empty
                                 error('Wrong size. coeff must be an n-by-1 vector, where n is the height of opVar')
                             end
                         end
+                        maxDepth = 0; % addition: number of terms in the polynomial
+                        maxWidth = 0; % multiplication: maximum degree of monomials
+                        if ~isempty(opVar)
                             maxDepth = max(cellfun(@(x) size(x,1), opVar),[],'all');
                             maxWidth = max(cellfun(@(x) size(x,2), opVar),[],'all');
+                        end
                         for jj=1:size(opVar,2)
                             for ii=1:size(opVar,1)
                                 currDepth = size(opVar{ii,jj},1);
@@ -100,8 +107,10 @@ classdef lava
                             end
                         end
                         opVar = permute(reshape(cell2mat(opVar),maxDepth,m1,maxWidth,n1),[2,4,1,3]);
-                        % sort, since commuting!
-                        opVar = reshape(sort(reshape(opVar,numel(opVar)/maxWidth,maxWidth),2),m1,n1,maxDepth,maxWidth);
+                        % sort, since multiplication commutes:
+                        opVar = reshape(sort(reshape(opVar,maxDepth*m1*n1,maxWidth),2),m1,n1,maxDepth,maxWidth);
+                        % sort, since addition commutes:
+
                         coeff = permute(reshape(cell2mat(coeff),maxDepth,m1,n1),[2,3,1]);
                         opOut.opVar = opVar;
                         opOut.coeff = coeff;
@@ -149,10 +158,8 @@ classdef lava
         function varargout = size(op,varargin)
             % return all four dimensions
             % size(op,3) = maxDepth; size(op,4) = maxWidth;
-            if isempty(op)
-                [varargout{1:nargout}] = size([],varargin{:});
-            elseif nargin==1 && nargout<=1
-                % output a vector, of only the matrix dimension
+            if nargin==1 && nargout<=1
+                % output a vector, if only the matrix dimension
                 % not depth and width of opVar
                 opVar1 = op.opVar;
                 varargout{1} = [size(opVar1,1),size(opVar1,2)];
@@ -367,15 +374,16 @@ classdef lava
             elseif isempty(op2)
                 opOut = op1;
                 return;
-            elseif max(m1,n1)==1
+            elseif (max(m1,n1)==1) && ((m1 ~= m2) || (n1 ~= n2))
                 % scalar with matrix
-                op1 = simplify(kron(op1,ones(size(op2))));
+                op1 = kron(op1,ones(size(op2)));
                 [m1, n1, d1, w1] = size(op1);
-            elseif max(m2,n2)==1
+            elseif (max(m2,n2)==1) && ((m1 ~= m2) || (n1 ~= n2))
                 % matrix with scalar
-                op2 = simplify(kron(op2,ones(size(op1))));
+                op2 = kron(op2,ones(size(op1)));
                 [m2, n2, d2, w2] = size(op2);
-            elseif m1~=m2 || n1~=n2
+            end
+            if m1~=m2 || n1~=n2
                 error('wrong size');
             end
             
@@ -388,6 +396,7 @@ classdef lava
                 op2.opVar = reshape([zeros(m2*n2*d2,wDiff) reshape(op2.opVar,m2*n2*d2,w2)],m2,n2,d2,w1);
             end
             
+            % perform addition
             opVar3 = cat(3,op1.opVar,op2.opVar);
             coeff3 = cat(3,op1.coeff,op2.coeff);
             
@@ -401,11 +410,11 @@ classdef lava
                 
                 [m1, n1, d1, w1] = size(op1);
                 [m2, n2, d2, w2] = size(op2);
-                if max(m1,n1)==1 
-                    op1 = simplify(kron(op1,ones(size(op2))));
+                if (max(m1,n1)==1) && ((m1 ~= m2) || (n1 ~= n2))
+                    op1 = kron(op1,ones(size(op2)));
                     [m1, n1, d1, w1] = size(op1);
-                elseif max(m2,n2)==1
-                    op2 = simplify(kron(op2,ones(size(op1))));
+                elseif (max(m2,n2)==1) && ((m1 ~= m2) || (n1 ~= n2))
+                    op2 = kron(op2,ones(size(op1)));
                     [m2, n2, d2, w2] = size(op2);
                 elseif m1~=m2 || n1~=n2
                     error('wrong size');
@@ -430,12 +439,12 @@ classdef lava
             % one of them is double
             % simply .* the coeffs with the double and keep opVar
             elseif isa(op1,'double') && isa(op2,'lava')
-                opOut = lava(op2.opVar, op1.*op2.coeff);       
+                opOut = lava(op2.opVar, op1.*op2.coeff);
             elseif isa(op1,'lava') && isa(op2,'double')
                 opOut = lava(op1.opVar, op2.*op1.coeff);
             end
         end
-                
+        
         % minus
         function opOut = minus(op1,op2)
             opOut = op1 + -1.*op2;
@@ -453,10 +462,10 @@ classdef lava
             % a lava matrix with a double matrix
             % or two lava matrices
             if isa(op1,'double') && isa(op2,'lava')
-                op1 = lava(zeros(size(op1)),op1);
+                op1 = lava.num2lava(op1);
                 opOut = mtimes(op1,op2);
             elseif isa(op1,'lava') && isa(op2,'double')
-                op2 = lava(zeros(size(op2)),op2);
+                op2 = lava.num2lava(op2);
                 opOut = mtimes(op1,op2);
             elseif isa(op1,'lava') && isa(op2,'lava')
                 % both are lava objects
@@ -511,7 +520,7 @@ classdef lava
             % Matrix division, only division by a scalar is supported
             
             if numel(op2) == 1
-                 opOut = rdivide(op1,op2);
+                opOut = rdivide(op1,op2);
             else
                 error('Unsupported arguments');
             end
@@ -563,10 +572,10 @@ classdef lava
             op2 = varargin{2};
             
             if isa(op1,'double') && isa(op2,'lava')
-                op1 = lava(zeros(size(op1)),op1);
+                op1 = lava.num2lava(op1);
                 opOut = kron(op1,op2);
             elseif isa(op1,'lava') && isa(op2,'double')
-                op2 = lava(zeros(size(op2)),op2);
+                op2 = lava.num2lava(op2);
                 opOut = kron(op1,op2);
             elseif isa(op1,'lava') && isa(op2,'lava')
                 [m1, n1, d1, w1] = size(op1);
@@ -626,14 +635,14 @@ classdef lava
             % variable).
             
             % First we check the dimension
-            if numel(op1) > 1
+            if numel(op1) ~= 1
                 result = false;
                 return;
             end
             
-            % Now we have only one element. We check if it involves any
+            % Now we have exactly one element. We check if it involves any
             % variables.
-            op1 = op1.simplify;
+            op1 = simplify(op1);
             result = (op1.opVar == 0);
         end
         
@@ -897,7 +906,11 @@ classdef lava
                           || ((size(op1.opVar,2)*size(op1.opVar,3)*size(op1.opVar,4) <= 100) && (size(op1,1) < 1000));
             
             if niceDisplay
-                disp(['  ', num2str(size(op1,1)), 'x', num2str(size(op1,2)), ' lava array:']);
+                if numel(op1) == 0
+                    disp(['  ', num2str(size(op1,1)), 'x', num2str(size(op1,2)), ' lava array']);
+                else
+                    disp(['  ', num2str(size(op1,1)), 'x', num2str(size(op1,2)), ' lava array:']);
+                end
                 disp(' ');
                 
                 % possibly better display
@@ -976,7 +989,10 @@ classdef lava
             opVar1 = op1.opVar;
             coeff1 = op1.coeff;
             
-            % sort the addition dimension, d
+            % First, we simplify multiplications assuming that the multiplication commutes:
+            opVar1 = reshape(sort(reshape(opVar1,m1*n1*d1,w1),2),m1,n1,d1,w1);
+
+            % Now we sort the addition dimension, d
             % elementwise
             opVar1 = reshape(permute(reshape(opVar1,m1,n1,d1,w1),[3 4 2 1]),d1,numel(opVar1)/d1);
             coeff1 = reshape(permute(reshape(coeff1,m1,n1,d1), [3 2 1]),d1,numel(coeff1)/d1);
@@ -987,18 +1003,18 @@ classdef lava
                 % sort according to opVar
                 [tmpV, idx] = sortrows(tmpV); 
                 tmpC = tmpC(idx); % the coeffs follows
-                uniqV=  unique(tmpV,'rows');
+                [uniqV, ~, labels] = unique(tmpV,'rows');
                 if size(uniqV,1)<size(tmpV,1)
-                    for jj=1:size(uniqV,1)
+                    % identify repeated terms only
+                    repeated = find(sum(sparse(1:length(labels), labels, 1)) > 1);
+                    for jj = repeated
                         % collapse the coeff into the last one
                         % and set opVar to all 0 after the coeff is removed
-                        idx = prod(tmpV==uniqV(jj,:),2);
-                        nbRemove = sum(idx)-1;
-                        if nbRemove>=1
-                            tmpC(find(idx,1,'last')) = sum(tmpC(logical(idx)));
-                            tmpC(find(idx,nbRemove)) = 0;
-                            tmpV(find(idx,nbRemove),:) = zeros(nbRemove,w1);
-                        end
+                        fidx = find(labels == jj);
+                        assert(length(fidx) > 1); % We should have more than one term if we arrive here
+                        tmpC(fidx(end)) = sum(tmpC(fidx));
+                        tmpC(fidx(1:end-1)) = 0;
+                        tmpV(fidx(1:end-1),:) = 0;
                     end
                 end
                 % move the 0 coefficient
@@ -1010,10 +1026,15 @@ classdef lava
             
             % trim the top zeros, if any
             % reduce maximum depth
-%             idx = sum(abs(coeff1),2)==0;
             idx = prod(coeff1==0,2) == 1;
-            opVar1(idx,:) = [];
-            coeff1(idx,:) = [];
+            if sum(idx)==d1
+                % We keep always at least depth of 1
+                opVar1 = 0*opVar1(1,:);
+                coeff1 = 0*coeff1(1,:);
+            else
+                opVar1(idx,:) = [];
+                coeff1(idx,:) = [];
+            end
             % new maxDepth
             d1 = size(opVar1,1);
             
@@ -1021,7 +1042,6 @@ classdef lava
             % reduce maximal width
             opVar1 = sort(reshape(permute(reshape(opVar1,d1,w1,n1,m1),[4 3 1 2]),numel(opVar1)/w1,w1),2);
             coeff1 = reshape(permute(reshape(coeff1,d1,n1,m1),[3 2 1]),m1,n1,d1);
-%             idx = sum(abs(opVar1),1)==0;
             idx = prod(opVar1==0,1) == 1;
             % We always keep at least a width of 1
             if isequal(idx, ones(1,w1))
