@@ -934,15 +934,15 @@ classdef lava
             niceDisplay = (nargin==2 && strcmp(str1,'full')) ...
                           || ((size(op1.opVar,2)*size(op1.opVar,3)*size(op1.opVar,4) <= 100) && (size(op1,1) < 1000));
             
+            if (numel(op1) == 0) || ~niceDisplay
+                disp(['  ', num2str(size(op1,1)), 'x', num2str(size(op1,2)), ' lava array (polynomials of degree ', num2str(size(op1.opVar,4)), ' with up to ', num2str(size(op1.opVar,3)), ' terms)']);
+            else
+                disp(['  ', num2str(size(op1,1)), 'x', num2str(size(op1,2)), ' lava array (polynomials of degree ', num2str(size(op1.opVar,4)), ' with up to ', num2str(size(op1.opVar,3)), ' terms):']);
+            end
+            disp(' ');
+
             if niceDisplay
-                if numel(op1) == 0
-                    disp(['  ', num2str(size(op1,1)), 'x', num2str(size(op1,2)), ' lava array']);
-                else
-                    disp(['  ', num2str(size(op1,1)), 'x', num2str(size(op1,2)), ' lava array:']);
-                end
-                disp(' ');
-                
-                % possibly better display
+                % possibly display more info
                 cellDescription = op1.toStr;
                 
                 % Finds the longest string in each column
@@ -963,9 +963,6 @@ classdef lava
                     end
                     disp(text);
                 end
-            else
-                % just the default display
-                builtin('disp',op1);
             end
         end
 
