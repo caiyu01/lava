@@ -1180,59 +1180,34 @@ classdef lava
             % the largest number needed
             maxBase = maxBase+1;
             
-            % varargout is a structure, with varIdx and coeff
-            s1.type = '.';
-            s1.subs = 'opVar';
-            s2.type = '.';
-            s2.subs = 'coeff';
-            
-            % put it in the output the same way as input
+            % compute output
+            output = cell(size(input));
+            for co = 1:length(input)
+                [m, n, d, w] = size(input{co});
+                tmp = reshape(input{co}.opVar,[m*n*d, w]);
+                vvarIdx = reshape(lava.severalBases2dec(tmp,maxBase),m,n,d);
+                output{co}.varIdx = vvarIdx;
+                % just keeping a copy of the coefficients, for the
+                % corresponding varIdx
+                % maybe we don't need it
+                output{co}.coeff = input{co}.coeff; 
+                % wrap vvarIdx into column vector to make the concatenation
+                uniqueIdx = unique([uniqueIdx; vvarIdx(:)]);
+            end
+
+            % put the output in the same way as input
             % distinguish the case of lava and cell of lavas
             varIdxCell = cell(1,nargin);
             co = 1;
             for ii=1:nargin
                 if iscell(varargin{ii})
                     for jj = 1:numel(varargin{ii})
-                        [m, n, d, w] = size(input{co});
-                        tmp = reshape(input{co}.opVar,[m*n*d, w]);
-                        vvarIdx = reshape(lava.severalBases2dec(tmp,maxBase),m,n,d);
-                        varIdxCell{ii}{jj}.varIdx = vvarIdx;
-                        % just keeping a copy of the coefficients, for the
-                        % corresponding varIdx
-                        % maybe we don't need it
-                        varIdxCell{ii}{jj}.coeff = input{co}.coeff; 
+                        varIdxCell{ii}{jj} = output{co};
                         co = co+1;
-                        % wrap vvarIdx into column vector to make the concatenation
-                        uniqueIdx = unique([uniqueIdx; vvarIdx(:)]);
                     end
                 else
-                    [m, n, d, w] = size(input{co});
-                    tmp = reshape(input{co}.opVar,[m*n*d, w]);
-                    vvarIdx = reshape(lava.severalBases2dec(tmp,maxBase),m,n,d);
-                    varIdxCell{ii}.varIdx = vvarIdx;
-                    % just keeping a copy of the coefficients, for the
-                    % corresponding varIdx
-                    % maybe we don't need it
-                    varIdxCell{ii}.coeff = input{co}.coeff; 
+                    varIdxCell{ii} = output{co};
                     co = co+1;
-                    % wrap vvarIdx into column vector to make the concatenation
-                    uniqueIdx = unique([uniqueIdx; vvarIdx(:)]);
-%                     vvarIdx = cellfun( @(x) (severalBases2dec(x,maxBase)), subsref(input{co},s1),'Uni',0);
-%                     varIdxCell{ii}.varIdx = vvarIdx;
-%                     % just keeping a copy of the coefficients, for the
-%                     % corresponding varIdx
-%                     % maybe we don't need it
-%                     varIdxCell{ii}.coeff = subsref(input{co},s2);
-%                     co = co+1;
-%                     % wrap vvarIdx into column vector to make the concatenation
-%                     % of uniqueIdx easier
-%                     if iscell(vvarIdx)
-%                         vvarIdx = cellfun(@(x) x', vvarIdx,'Uni',0);
-%                         vvarIdx = [vvarIdx{:}];
-%                     else
-%                         vvarIdx = vvarIdx';
-%                     end
-%                     uniqueIdx = unique([uniqueIdx unique(vvarIdx(:))']);
                 end
             end
             varargout = varIdxCell;
@@ -1269,7 +1244,6 @@ classdef lava
                         % operate on each cell element
                         fprintf('Assigning cell %d matrix %d', ii, kk)
                         fprintf(newline)
-                        clear m
                         tmpVarIdx = varIdxCell{ii}{kk}.varIdx;
                         tmpCoeff = varIdxCell{ii}{kk}.coeff;
                         
@@ -1277,14 +1251,13 @@ classdef lava
                     
                         tmp = reshape(vSp(tmpVarIdx+1),m1,n1,d1);
                         varargout{ii}{kk} = sum(tmp.*tmpCoeff,3);
-                        
                     end
                 else
                     fprintf('Assigning matrix %d', ii)
                     fprintf(newline)
-                    clear m
                     tmpVarIdx = varIdxCell{ii}.varIdx;
                     tmpCoeff = varIdxCell{ii}.coeff;
+
                     % make the cell into a big matrix
                     % assign sdpvar, only once
                     % then do matrix dot product
@@ -1293,7 +1266,6 @@ classdef lava
                     
                     tmp = reshape(vSp(tmpVarIdx+1),m1,n1,d1);
                     varargout{ii} = sum(tmp.*tmpCoeff,3);
-                    
                 end
             end
             varargout = [varargout {vSp}];
