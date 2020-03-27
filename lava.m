@@ -276,6 +276,12 @@ classdef lava
                      opVar1 = reshape(opVar1,[m2,1,d1,w1]);
                      coeff1 = subsref(reshape(op1.coeff,m1*n1,d1),t);
                      coeff1 = reshape(coeff1,[m2,1,d1]);
+                     
+                     % Permute if needed
+                     if (m1 == 1) && (n1 > 1)
+                         opVar1 = permute(opVar1, [2 1 3 4]);
+                         coeff1 = permute(coeff1, [2 1 3]);
+                     end
                  else
                      error('Indexing not supported. a(1) or a(1,2)')
                  end                     
@@ -1113,6 +1119,11 @@ classdef lava
             opVar = reshape(uniques(:,1:s2(3)*s2(4)), s2(1), s2(2), s2(3), s2(4));
             coeff = reshape(uniques(:,s2(3)*s2(4)+1:end), s2(1)*s2(2), s2(3));
             out = lava(opVar, coeff);
+            
+            % eventually, adjust size
+            if (nargin == 1) && (size(varargin{1},1) == 1) && (size(varargin{1},2) > 1)
+                out = out.';
+            end
         end
         
         function out = uniqueVar(varargin)
