@@ -1026,9 +1026,6 @@ classdef lava
             for ii=1:m1*n1
                 tmpV = opVar1(:,(1:w1)+(ii-1)*w1);
                 tmpC = coeff1(:,ii);
-                % sort according to opVar
-                [tmpV, idx] = sortrows(tmpV); 
-                tmpC = tmpC(idx); % the coeffs follows
                 [uniqV, ~, labels] = unique(tmpV,'rows');
                 if size(uniqV,1)<size(tmpV,1)
                     % identify repeated terms only
@@ -1043,9 +1040,18 @@ classdef lava
                         tmpV(fidx(1:end-1),:) = 0;
                     end
                 end
-                % move the 0 coefficient
-                [tmpC, idx] = sort(tmpC);
-                tmpV = tmpV(idx,:);
+                % any variable with a zero coefficient is removed
+                tmpV(tmpC==0,:) = 0;
+                % sort according to opVar
+                [tmpV, idx] = sortrows(tmpV); 
+                tmpC = tmpC(idx); % the coeffs follows
+%                 % move the 0 coefficient
+%                 [tmpC, idx] = sort(tmpC);
+%                 tmpV = tmpV(idx,:);
+%                 % any variable with a zero coefficient is removed
+%                 firstnz = find(tmpC,1,'first');
+%                 tmpV(1:firstnz-1,:) = 0;
+                % save the result
                 opVar1(:,(1:w1)+(ii-1)*w1) = tmpV;
                 coeff1(:,ii) = tmpC;
             end
