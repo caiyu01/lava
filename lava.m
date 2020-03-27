@@ -12,8 +12,8 @@ classdef lava
 % Some ways to declare a lava object:
 % x = lava; % empty
 % x = lava([1 2;3 4]); % specifies the variables, but coeff=1
-% x = lava({[1 2] 2; 3 4},[1 1;-1 1i]); % specifies the variables
-% and coefficients
+% x = lava({[1 2] 2; 3 4},[1 1;-1 1i]); % specifies the variables and coefficients
+% x = lava.num2lava([1 2;3 4]); % a numeric matrix 
 % written by Cai Yu, 2020-02-25
 
 % last updated 2020-3-10, new version
@@ -47,12 +47,18 @@ classdef lava
         function opOut = lava(varargin)
         % constructs a lava object
         %
+        % To construct a constant lava (i.e. with no variables), use the
+        % method lava.num2lava .
+        %
         % Examples:
-        %     a = lava  % empty
+        %     a = lava             % empty
         %     a = lava([1 2;3 4])  % specifies the variables, but coeff=1
         %     a = lava([1 2;3 4], [1 1;-1 1i])  % specifies the variables and coefficients
         %     a = lava({[1 5] 2;3 4}, {1 1;-1 1i})  % including a monomial of degree 2
         %     a = lava({[1; 5] 2;3 4}, {[1; 2] 1;-1 1i})  % including a polynomial term
+        %     a = lava(1)                    % x1
+        %     a = lava.num2lava(1)           % constant 1
+        %     a = lava.num2lava([1 2; 3 4])  % constant matrix [1 2; 3 4]
             switch nargin
                 case 0
                     % if coeff1 is not specified
