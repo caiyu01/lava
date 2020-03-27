@@ -681,9 +681,10 @@ classdef lava
         function result = ishermitian(op1)
             % First we simplify the object
             op1 = simplify(op1);
+            op2 = simplify(op1.ctranspose); % for matlab, -1i <= 1 <= 1i, so simplifying again is crucial here
             
             % Now we check the structure
-            result = isequal(op1, op1.ctranspose);
+            result = isequal(op1, op2);
         end
         
         
