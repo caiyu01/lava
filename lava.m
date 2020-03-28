@@ -1042,6 +1042,7 @@ classdef lava
             %     x1 = lava(1);
             %     op1 = x1*x1;
             %     list = [x1, x1*x1, x1*x1*x1]
+            %     op1.localize(list)
             %
             % See also:
             %     lava.uniqueVar
