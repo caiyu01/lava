@@ -659,6 +659,25 @@ classdef lava
             end
         end
         
+        % partial transposition
+        function opOut = Tx(op1, sys, dim)
+            assert(isa(op1, 'lava'));
+            assert(min(sys) >= 1);
+            assert(max(sys) <= length(dim));
+            assert(isequal(prod(dim)*[1 1], size(op1)));
+            
+            opVar1 = op1.opVar;
+            coeff1 = op1.coeff;
+            [m1,n1,d1,w1] = size(opVar1);
+            
+            nbSys = length(dim);
+            permutation = (1:2*nbSys+2);
+            permutation([nbSys+1-sys, 2*nbSys+1-sys]) = permutation([2*nbSys+1-sys,nbSys+1-sys]);
+            opVar1 = reshape(permute(reshape(opVar1, [dim(end:-1:1), dim(end:-1:1), d1, w1]), permutation), [m1,n1,d1,w1]);
+            coeff1 = reshape(permute(reshape(coeff1, [dim(end:-1:1), dim(end:-1:1), d1]), permutation(1:end-1)), [m1,n1,d1]);
+            
+            opOut = lava(opVar1, coeff1);
+        end
         
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         %    basic tests
@@ -712,7 +731,7 @@ classdef lava
         
         % reshape
         function result = reshape(op1, varargin)
-            if length(varargin)==1
+            if (length(varargin)==1) && (length(varargin{1}) == 2)
                 s1 = varargin{1}(1);
                 s2 = varargin{1}(2);
             elseif length(varargin)==2
