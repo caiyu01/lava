@@ -1032,8 +1032,8 @@ classdef lava
 
             % Now we sort the addition dimension, d
             % elementwise
-            opVar1 = reshape(permute(reshape(opVar1,m1,n1,d1,w1),[3 4 2 1]),d1,numel(opVar1)/d1);
-            coeff1 = reshape(permute(reshape(coeff1,m1,n1,d1), [3 2 1]),d1,numel(coeff1)/d1);
+            opVar1 = reshape(permute(reshape(opVar1,m1,n1,d1,w1),[3 4 1 2]),d1,numel(opVar1)/d1);
+            coeff1 = reshape(permute(reshape(coeff1,m1,n1,d1), [3 1 2]),d1,numel(coeff1)/d1);
             
             for ii=1:m1*n1
                 tmpV = opVar1(:,(1:w1)+(ii-1)*w1);
@@ -1084,8 +1084,8 @@ classdef lava
             
             % trim the left most zeros, if any
             % reduce maximal width
-            opVar1 = sort(reshape(permute(reshape(opVar1,d1,w1,n1,m1),[4 3 1 2]),numel(opVar1)/w1,w1),2);
-            coeff1 = reshape(permute(reshape(coeff1,d1,n1,m1),[3 2 1]),m1,n1,d1);
+            opVar1 = sort(reshape(permute(reshape(opVar1,d1,w1,n1,m1),[3 4 1 2]),numel(opVar1)/w1,w1),2);
+            coeff1 = reshape(permute(reshape(coeff1,d1,n1,m1),[2 3 1]),m1,n1,d1);
             idx = prod(opVar1==0,1) == 1;
             % We always keep at least a width of 1
             if isequal(idx, ones(1,w1))
