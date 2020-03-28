@@ -157,6 +157,7 @@ classdef lava
             end
         end
         
+        
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         % size and numel
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -191,6 +192,7 @@ classdef lava
                 l = n;
             end
         end
+        
         
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         %    subscripted referecing and assignment
@@ -365,6 +367,15 @@ classdef lava
             n = 1;
         end
         
+        % real part
+        function opOut = real(op1)
+            opOut = lava(op1.opVar, real(op1.coeff));
+        end
+        
+        % imaginary part
+        function opOut = imag(op1)
+            opOut = lava(op1.opVar, imag(op1.coeff));
+        end
         
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         %    basic arithmetic operations
@@ -647,6 +658,7 @@ classdef lava
                 opOut = opOut + vect'*op1*vect;
             end
         end
+        
         
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         %    basic tests
@@ -1119,9 +1131,9 @@ classdef lava
             % Creates the corresponding lava object
             s2 = s;
             s2(1) = size(uniques,1);
-            opVar = reshape(uniques(:,1:s2(3)*s2(4)), s2(1), s2(2), s2(3), s2(4));
-            coeff = reshape(uniques(:,s2(3)*s2(4)+1:end), s2(1)*s2(2), s2(3));
-            out = lava(opVar, coeff);
+            opVar1 = reshape(uniques(:,1:s2(3)*s2(4)), s2(1), s2(2), s2(3), s2(4));
+            coeff1 = reshape(uniques(:,s2(3)*s2(4)+1:end), s2(1)*s2(2), s2(3));
+            out = lava(opVar1, coeff1);
             
             % eventually, adjust size
             if (nargin == 1) && (size(varargin{1},1) == 1) && (size(varargin{1},2) > 1)
