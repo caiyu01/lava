@@ -904,6 +904,10 @@ classdef lava
                     for k = 1:size(op1.opVar,3)
                         if (op1.coeff(i,j,k) ~= 0)
                             coeffTxt = strrep(strrep(num2str(op1.coeff(i,j,k)), '+', ' + '), '-', ' - ');
+                            if (length(coeffTxt) > 2) && isequal(coeffTxt(1:2), '0 ')
+                                % purely imaginary term, remove the zero
+                                coeffTxt = coeffTxt(2:end);
+                            end
                             if sum(op1.opVar(i,j,k,:)) == 0
                                 % just a constant term
                                 if (length(coeffTxt) > 2) && (coeffTxt(2) == '-')
