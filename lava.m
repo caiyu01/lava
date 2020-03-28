@@ -29,6 +29,7 @@ classdef lava
 % - check speed for assignSdpVar, assign hermitian matrices
 % - ambiguity in constructing lava from two matrices
 %   when some of the dimension is 1...
+% - suport multidimensional arrays
 %                                                              %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -377,6 +378,13 @@ classdef lava
             opOut = lava(op1.opVar, imag(op1.coeff));
         end
         
+%         % constant part
+%         function opOut = constPart(op1)
+%             op1 = simplify(op1); % put all constants together
+%             
+%             % TODO
+%         end
+        
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         %    basic arithmetic operations
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -678,6 +686,12 @@ classdef lava
             
             opOut = lava(opVar1, coeff1);
         end
+        
+        % partial trace
+        function opOut = TrX(op1, sys, dim)
+            error('TODO');
+        end
+        
         
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         %    basic tests
@@ -1134,6 +1148,9 @@ classdef lava
         %    basic variable-related operations
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+        % TODO IN THIS SECTION : Ignore variables which come with a
+        %                        coefficient 0!
+        
         function out = unique(varargin)
             % from several lava objects
             % returns the list of unique elements
