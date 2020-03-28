@@ -889,37 +889,47 @@ classdef lava
                     text = ' + ';
                     for k = 1:size(op1.opVar,3)
                         if (op1.coeff(i,j,k) ~= 0)
-                            if (isreal(op1.coeff(i,j,k)) && (op1.coeff(i,j,k) < 0)) || ...
-                               (isreal(1i*op1.coeff(i,j,k)) && (-1i*op1.coeff(i,j,k) < 0))
-                                % correct the sign
-                                text = [text(1:end-2), '- '];
-                            end
+                            coeffTxt = strrep(strrep(num2str(op1.coeff(i,j,k)), '+', ' + '), '-', ' - ');
                             if sum(op1.opVar(i,j,k,:)) == 0
                                 % just a constant term
-                                text = [text, num2str(abs(op1.coeff(i,j,k))), ' + '];
+                                if (length(coeffTxt) > 2) && (coeffTxt(2) == '-')
+                                    text = [text(1:end-3), coeffTxt, ' + '];
+                                else
+                                    text = [text, coeffTxt, ' + '];
+                                end
                             else
                                 % some operators are involved
-                                if isreal(op1.coeff(i,j,k))
-                                    % purely real coefficient
-                                    if abs(op1.coeff(i,j,k)) ~= 1
-                                        % write the coefficient if not unity
-                                        text = [text, num2str(abs(op1.coeff(i,j,k))), '*'];
+                                if isreal(op1.coeff(i,j,k)) || isreal(1i*op1.coeff(i,j,k))
+                                    % either real of imaginary coefficient
+                                    % we first adjust the sign
+                                    start = 1;
+                                    if (length(coeffTxt) > 2) && (coeffTxt(2) == '-')
+                                        text(end-1) = '-';
+                                        start = 4;
                                     end
-                                elseif isreal(1i*op1.coeff(i,j,k))
-                                    % purely imaginary coefficient
-                                    if abs(op1.coeff(i,j,k)) == 1
-                                        % write just 1i if unity
-                                        text = [text, '1i*'];
+                                    if isreal(op1.coeff(i,j,k))
+                                        % purely real coefficient
+                                        if abs(op1.coeff(i,j,k)) ~= 1
+                                            text = [text, coeffTxt(start:end), '*'];
+                                        end
                                     else
-                                        % write the coefficient if not unity
-                                        text = [text, num2str(abs(op1.coeff(i,j,k))), 'i*'];
+                                        % purely imaginary coefficient
+                                        if abs(op1.coeff(i,j,k)) == 1
+                                            % we write just 1i is unity
+                                            text = [text, '1i*'];
+                                        else
+                                            text = [text, coeffTxt(start:ent), 'i*'];
+                                        end
                                     end
                                 else
-                                    % both real and imaginary
-                                    % coefficients
-                                    text = [text, '(', num2str(op1.coeff(i,j,k)), ')*'];
+                                    % both real and imaginary coefficients
+                                    if (length(coeffTxt) > 2) && (coeffTxt(2) == '-')
+                                        text = [text, '(- ', coeffTxt(4:end), ')*'];
+                                    else
+                                        text = [text, '(', coeffTxt, ')*'];
+                                    end
                                 end
-
+                                
                                 ops = [0 squeeze(op1.opVar(i,j,k,:))' 0];
                                 operatorStart = 1;
                                 for l = 2:length(ops)
@@ -951,7 +961,9 @@ classdef lava
                             % We don't print the initial plus sign
                             result{i,j} = text(4:end-3);
                         else
-                            result{i,j} = [text(2), text(4:end-3)];
+                            % Don't print the space before the first minus
+                            % sign
+                            result{i,j} = text(2:end-3);
                         end
                     else
                         result{i,j} = '0';
