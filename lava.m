@@ -186,7 +186,8 @@ classdef lava
         end
         
         function l = length(op)
-            [m,n] = size(op);
+            % need dummy third output to get the correct size
+            [m,n,~,~] = size(op);
             if m>=n
                 l = m;
             else
