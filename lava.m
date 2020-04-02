@@ -155,9 +155,6 @@ classdef lava
                 % not depth and width of opVar
                 opVar1 = op.opVar;
                 varargout{1} = [size(opVar1,1),size(opVar1,2)];
-%             elseif nargin==1 && nargout==2
-%                 varargout{1} = size(op.opVar,1);
-%                 varargout{2} = size(op.opVar,2);
             else
                 [varargout{1:nargout}] = size(op.opVar,varargin{:});
             end
@@ -169,8 +166,7 @@ classdef lava
         end
         
         function l = length(op)
-            % need dummy third output to get the correct size
-            [m,n,~,~] = size(op);
+            [m,n] = size(op);
             if m>=n
                 l = m;
             else
