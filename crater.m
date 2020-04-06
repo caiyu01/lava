@@ -76,7 +76,7 @@ classdef crater
         % Yalmip interface
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         
-        function [sol, Fv, objv] = optimize(varargin)
+        function [sol, Fv, objv, lhsv, rhsv] = optimize(varargin)
             t = tic;
             assert(nargin >= 2);
             if isa(varargin{2}, 'crater')
