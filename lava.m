@@ -369,6 +369,22 @@ classdef lava
             n = 1;
         end
         
+        function result = end(this, K, N)
+            % end - returns the last index
+            
+            if N == 1
+                % Then the indexing is done with only one index, as in a(end)
+                result = prod(size(this));
+            else
+                % Then the indexing is done with two indices, as in a(end,1:2)
+                if (K < 1) || (K > 2)
+                    error('lava objects only have two dimensions');
+                end
+                s = size(this);
+                result = s(K);
+            end
+        end
+        
         % real part
         function opOut = real(op1)
             opOut = lava(op1.opVar, real(op1.coeff));
