@@ -941,6 +941,8 @@ classdef lava
                                     if (length(coeffTxt) > 2) && (coeffTxt(2) == '-')
                                         text(end-1) = '-';
                                         start = 4;
+                                    elseif (length(coeffTxt) > 2) && isreal(1i*op1.coeff(i,j,k))
+                                        start = 4;
                                     end
                                     if isreal(op1.coeff(i,j,k))
                                         % purely real coefficient
@@ -953,7 +955,7 @@ classdef lava
                                             % we write just 1i is unity
                                             text = [text, '1i*'];
                                         else
-                                            text = [text, coeffTxt(start+3:end-1), 'i*'];
+                                            text = [text, coeffTxt(start:end), '*'];
                                         end
                                     end
                                 else
@@ -1033,13 +1035,39 @@ classdef lava
                 colLen = colLen + 2;
                 
                 % print each element
-                for i = 1:size(op1,1)
-                    text = '    ';
-                    for j = 1:size(op1,2)
-                        text = [text, cellDescription{i,j}];
-                        text = [text, char(kron(' ', ones(1, colLen(j)-length(cellDescription{i,j}))))];
+                forMathematica = false;
+                if forMathematica
+                    for i = 1:size(op1,1)
+                        if i == 1
+                            text = '    {{';
+                        else
+                            text = '    {';
+                        end
+                        for j = 1:size(op1,2)
+                            text = [text, cellDescription{i,j}];
+                            if j < size(op1,2)
+                                text = [text, ','];
+                            end
+                            text = [text, char(kron(' ', ones(1, colLen(j)-length(cellDescription{i,j})-1)))];
+                            if j == size(op1,2)
+                                if i < size(op1,1)
+                                    text = [text, '},'];
+                                else
+                                    text = [text, '}}'];
+                                end
+                            end
+                        end
+                        disp(text);
                     end
-                    disp(text);
+                else
+                    for i = 1:size(op1,1)
+                        text = '    ';
+                        for j = 1:size(op1,2)
+                            text = [text, cellDescription{i,j}];
+                            text = [text, char(kron(' ', ones(1, colLen(j)-length(cellDescription{i,j}))))];
+                        end
+                        disp(text);
+                    end
                 end
             end
         end
