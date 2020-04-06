@@ -937,7 +937,7 @@ classdef lava
                                             % we write just 1i is unity
                                             text = [text, '1i*'];
                                         else
-                                            text = [text, coeffTxt(start:ent), 'i*'];
+                                            text = [text, coeffTxt(start+3:end-1), 'i*'];
                                         end
                                     end
                                 else
@@ -1320,7 +1320,7 @@ classdef lava
             % sparse assignment
             % need to add 1, because we can't assign vSp(0)
             vSp = sparse(uniqueIdx(:)+1,ones(nbVar,1),v);
-            % lava(0) = 1;
+            % lava(0) = 1:
             vSp(1) = 1;
             
             varargout = cell(1,nargin);
