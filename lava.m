@@ -1132,7 +1132,12 @@ classdef lava
 
             selectedVariables = uniqueVar(lava(0), list);
             base = selectedVariables*selectedVariables';
-            opOut = kron(base, op1);
+            if isequal(op1, lava(0))
+                % simple case: localizing 1 gives the standard SDP matrix
+                opOut = base;
+            else
+                opOut = kron(base, op1);
+            end
         end
         
         
