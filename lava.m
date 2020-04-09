@@ -1305,7 +1305,7 @@ classdef lava
             else
                 % We construct the output from the unique array
                 list = uniqueVar(varargin{:},'array');
-                out = lava(mat2cell(list,ones(1,size(list,1)),size(list,2)));
+                out = simplify(lava(mat2cell(list,ones(1,size(list,1)),size(list,2))));
             end
         end
         
