@@ -862,7 +862,7 @@ classdef lava
         
         function result = vertcat(varargin)
             if nargin>2
-                result = horzcat(varargin{1},horzcat(varargin{2:end}));
+                result = vertcat(varargin{1},vertcat(varargin{2:end}));
             elseif nargin==2
                 % Make sure both object are lava objects
                 op1 = varargin{1};
