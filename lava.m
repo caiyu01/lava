@@ -1011,8 +1011,20 @@ classdef lava
         
         % disp
         function disp(op1,str1)
-            niceDisplay = (nargin==2 && strcmp(str1,'full')) ...
-                          || ((size(op1.opVar,2)*size(op1.opVar,3)*size(op1.opVar,4) <= 100) && (size(op1,1) < 1000));
+            if (nargin==2 && strcmp(str1,'full'))
+                niceDisplay = true;
+                shortenDisplay = false;
+            else
+                niceDisplay = (size(op1.opVar,2)*size(op1.opVar,3)*size(op1.opVar,4) <= 100);
+                shortenDisplay = niceDisplay && (size(op1,1) > 30);
+            end
+            
+            % Manual hack to produce output that can be easily entred into
+            % mathematica
+            forMathematica = false;
+            if forMathematica
+                shortenDisplay = false;
+            end
             
             if (numel(op1) == 0) || ~niceDisplay
                 disp(['  ', num2str(size(op1,1)), 'x', num2str(size(op1,2)), ' lava array (polynomials of degree ', num2str(size(op1.opVar,4)), ' with up to ', num2str(size(op1.opVar,3)), ' terms)']);
@@ -1023,11 +1035,21 @@ classdef lava
 
             if niceDisplay
                 % possibly display more info
-                cellDescription = op1.toStr;
                 
+                % identify lines to display
+                if shortenDisplay
+                    LinesToDisplay = [1:24, size(op1,1)-5:size(op1,1)];
+                    % Get text description of all elements to be printed
+                    cellDescription = op1.subsref(struct('type','()','subs',{{LinesToDisplay}})).toStr;
+                else
+                    LinesToDisplay = 1:size(op1,1);
+                    % Get text description of all elements to be printed
+                    cellDescription = op1.toStr;
+                end
+
                 % Finds the longest string in each column
                 colLen = zeros(1, size(op1,2));
-                for i = 1:size(op1,1)
+                for i = 1:size(cellDescription,1)
                     for j = 1:size(op1,2)
                         colLen(j) = max(colLen(j), length(cellDescription{i,j}));
                     end
@@ -1035,9 +1057,8 @@ classdef lava
                 colLen = colLen + 2;
                 
                 % print each element
-                forMathematica = false;
                 if forMathematica
-                    for i = 1:size(op1,1)
+                    for i = size(cellDescription,1)
                         if i == 1
                             text = '    {{';
                         else
@@ -1060,11 +1081,16 @@ classdef lava
                         disp(text);
                     end
                 else
-                    for i = 1:size(op1,1)
+                    co = 0;
+                    for i = LinesToDisplay
+                        co = co + 1;
+                        if shortenDisplay && (i == size(op1,1)-5)
+                            disp('   (...)');
+                        end
                         text = '    ';
                         for j = 1:size(op1,2)
-                            text = [text, cellDescription{i,j}];
-                            text = [text, char(kron(' ', ones(1, colLen(j)-length(cellDescription{i,j}))))];
+                            text = [text, cellDescription{co,j}];
+                            text = [text, char(kron(' ', ones(1, colLen(j)-length(cellDescription{co,j}))))];
                         end
                         disp(text);
                     end
