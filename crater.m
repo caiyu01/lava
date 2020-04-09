@@ -27,11 +27,13 @@ classdef crater
 
         % concatenation of multiple constraints
         function result = horzcat(varargin)
-            result = varargin{1}; % we want to return a crater object
-            result.cons = {};     % reinitialization
+            result = crater(0,'==',0); % we want to return a crater object
+            result.cons = {};          % reinitialization
             for i = 1:nargin
-                assert(isa(varargin{i}, 'crater'));
-                result.cons = [result.cons, varargin{i}.cons];
+                if ~isempty(varargin{i})
+                    assert(isa(varargin{i}, 'crater'));
+                    result.cons = [result.cons, varargin{i}.cons];
+                end
             end
         end
         
