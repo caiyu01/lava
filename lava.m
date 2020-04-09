@@ -1290,6 +1290,9 @@ classdef lava
                     [~,~,~,w] = size(varargin{ii});
                     opVar1 = varargin{ii}.opVar;
                     tmp = reshape(opVar1,numel(opVar1)/w,w);
+                    % We remove the variables which come with a coefficient
+                    % of zero
+                    tmp = tmp(varargin{ii}.coeff ~= 0,:);
                     if w<maxWidth
                         tmp = [zeros(size(tmp,1),maxWidth-w) tmp];
                     elseif w>maxWidth
