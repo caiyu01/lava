@@ -388,11 +388,13 @@ classdef lava
         % real part
         function opOut = real(op1)
             opOut = lava(op1.opVar, real(op1.coeff));
+            opOut = simplify(opOut, true);
         end
         
         % imaginary part
         function opOut = imag(op1)
             opOut = lava(op1.opVar, imag(op1.coeff));
+            opOut = simplify(opOut, true);
         end
         
 %         % constant part
@@ -495,6 +497,9 @@ classdef lava
             elseif isa(op1,'lava') && isa(op2,'double')
                 opOut = lava(op1.opVar, op2.*op1.coeff);
             end
+            
+            % Avoid too big representations
+            opOut = simplify(opOut, true);
         end
         
         % minus
@@ -549,6 +554,9 @@ classdef lava
                     opOut = lava(opVar3,coeff3);
                 end                
             end
+            
+            % Avoid too big representations
+            opOut = simplify(opOut, true);
         end
         
         % rdivide
@@ -651,6 +659,9 @@ classdef lava
                 coeff3 = permute(reshape(coeff1.*coeff2,d1*d2,m1*m2,n1*n2),[2 3 1]);
                 opOut = lava(opVar3,coeff3);
             end
+            
+            % Avoid too big representations
+            opOut = simplify(opOut, true);
         end
  
         % conjugate transposition
@@ -682,6 +693,9 @@ classdef lava
                 vect = [zeros(1,i-1) 1 zeros(1, size(op1,1)-i)]';
                 opOut = opOut + vect'*op1*vect;
             end
+            
+            % Avoid too big representations
+            opOut = simplify(opOut, true);
         end
         
         % partial transposition
@@ -1148,7 +1162,14 @@ classdef lava
         % simplify
         % slow: elementwise operation!
         % try arrayfun?
-        function opOut = simplify(op1)
+        function opOut = simplify(op1, quick)
+            % If the (optional) quick parameter is true, no element-wise
+            % operation is performed, only global ones.
+            
+            if nargin < 2
+                quick = false;
+            end
+            
             [m1, n1, d1, w1] = size(op1);
             opVar1 = op1.opVar;
             coeff1 = op1.coeff;
@@ -1161,37 +1182,34 @@ classdef lava
             opVar1 = reshape(permute(reshape(opVar1,m1,n1,d1,w1),[3 4 1 2]),d1,numel(opVar1)/d1);
             coeff1 = reshape(permute(reshape(coeff1,m1,n1,d1), [3 1 2]),d1,numel(coeff1)/d1);
             
-            for ii=1:m1*n1
-                tmpV = opVar1(:,(1:w1)+(ii-1)*w1);
-                tmpC = coeff1(:,ii);
-                [uniqV, ~, labels] = unique(tmpV,'rows');
-                if size(uniqV,1)<size(tmpV,1)
-                    % identify repeated terms only
-                    repeated = find(sum(sparse(1:length(labels), labels, 1)) > 1);
-                    for jj = repeated
-                        % collapse the coeff into the last one
-                        % and set opVar to all 0 after the coeff is removed
-                        fidx = find(labels == jj);
-                        assert(length(fidx) > 1); % We should have more than one term if we arrive here
-                        tmpC(fidx(end)) = sum(tmpC(fidx));
-                        tmpC(fidx(1:end-1)) = 0;
-                        tmpV(fidx(1:end-1),:) = 0;
+            if ~quick
+                % element-wise merging of identical terms
+                for ii=1:m1*n1
+                    tmpV = opVar1(:,(1:w1)+(ii-1)*w1);
+                    tmpC = coeff1(:,ii);
+                    [uniqV, ~, labels] = unique(tmpV,'rows');
+                    if size(uniqV,1)<size(tmpV,1)
+                        % identify repeated terms only
+                        repeated = find(sum(sparse(1:length(labels), labels, 1)) > 1);
+                        for jj = repeated
+                            % collapse the coeff into the last one
+                            % and set opVar to all 0 after the coeff is removed
+                            fidx = find(labels == jj);
+                            assert(length(fidx) > 1); % We should have more than one term if we arrive here
+                            tmpC(fidx(end)) = sum(tmpC(fidx));
+                            tmpC(fidx(1:end-1)) = 0;
+                            tmpV(fidx(1:end-1),:) = 0;
+                        end
                     end
+                    % any variable with a zero coefficient is removed
+                    tmpV(tmpC==0,:) = 0;
+                    % sort according to opVar
+                    [tmpV, idx] = sortrows(tmpV); 
+                    tmpC = tmpC(idx); % the coeffs follows
+                    % save the result
+                    opVar1(:,(1:w1)+(ii-1)*w1) = tmpV;
+                    coeff1(:,ii) = tmpC;
                 end
-                % any variable with a zero coefficient is removed
-                tmpV(tmpC==0,:) = 0;
-                % sort according to opVar
-                [tmpV, idx] = sortrows(tmpV); 
-                tmpC = tmpC(idx); % the coeffs follows
-%                 % move the 0 coefficient
-%                 [tmpC, idx] = sort(tmpC);
-%                 tmpV = tmpV(idx,:);
-%                 % any variable with a zero coefficient is removed
-%                 firstnz = find(tmpC,1,'first');
-%                 tmpV(1:firstnz-1,:) = 0;
-                % save the result
-                opVar1(:,(1:w1)+(ii-1)*w1) = tmpV;
-                coeff1(:,ii) = tmpC;
             end
             
             % trim the top zeros, if any
