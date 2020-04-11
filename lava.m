@@ -723,6 +723,36 @@ classdef lava
             error('TODO');
         end
         
+        % sum
+        function opOut = sum(op1, dim)
+            %   sum(a) : normal sum (column-wise for matrices)
+            %   sum(a, dim) : sum along the dimension dim
+            %   sum(a, 'all') : sum all elements
+            if nargin < 2
+                if size(op1,1) ~= 1
+                    dim = 1;
+                else
+                    dim = 2;
+                end
+            end
+
+            % Now we call the relevant sum procedure. Since the function creates a
+            % new object with the result, we keep the corresponding handle...
+            switch dim
+                case 'all'
+                    op1 = op1.subsref(struct('type','()','subs',{{':'}}));
+                    opOut = ones(1,numel(op1))*op1;
+                case 1
+                    opOut = ones(1,size(op1,1))*op1;
+                case 2
+                    opOut = op1*ones(size(op1,2),1);
+                otherwise
+                    error('Unexpected argument in sum');
+            end
+            
+            % Avoid too big representations
+            opOut = simplify(opOut, true);
+        end
         
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         %    basic tests
