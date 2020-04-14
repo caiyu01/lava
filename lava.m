@@ -754,6 +754,26 @@ classdef lava
             opOut = simplify(opOut, true);
         end
         
+        % round
+        function opOut = round(op1, nbDigits)
+            % Rounding off coefficients
+            %
+            % round(op1) rounds the coefficients of op1 to the nearest
+            %   integer
+            % round(op1, nbDigits) rounds the coefficients to the nbDigits
+            %   most significant digits
+            %
+            % See also: round
+            
+            opOut = op1;
+            if nargin == 1
+                opOut.coeff = round(opOut.coeff);
+            else
+                opOut.coeff = round(opOut.coeff, nbDigits);
+            end
+            opOut = simplify(opOut, true);
+        end
+        
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         %    basic tests
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
