@@ -1077,7 +1077,14 @@ classdef lava
         
         % disp
         function disp(op1,str1)
-            if (nargin==2 && strcmp(str1,'full'))
+            if (nargin >= 2) && strcmpi(str1, 'mathematica')
+                forMathematica = true;
+                str1 = 'full';
+            else
+                forMathematica = false;
+            end
+            
+            if (nargin >= 2) && strcmpi(str1,'full')
                 niceDisplay = true;
                 shortenDisplay = false;
             else
@@ -1085,9 +1092,6 @@ classdef lava
                 shortenDisplay = niceDisplay && (size(op1,1) > 30);
             end
             
-            % Manual hack to produce output that can be easily entred into
-            % mathematica
-            forMathematica = false;
             if forMathematica
                 shortenDisplay = false;
             end
@@ -1124,7 +1128,7 @@ classdef lava
                 
                 % print each element
                 if forMathematica
-                    for i = size(cellDescription,1)
+                    for i = 1:size(cellDescription,1)
                         if i == 1
                             text = '    {{';
                         else
