@@ -965,6 +965,8 @@ classdef lava
                     for k = 1:size(op1.opVar,3)
                         if (op1.coeff(i,j,k) ~= 0)
                             coeffTxt = strrep(strrep(num2str(op1.coeff(i,j,k)), '+', ' + '), '-', ' - ');
+                            % Deal with exponential notation
+                            coeffTxt = strrep(strrep(coeffTxt, 'e + ', 'e+'), 'e - ', 'e-');
                             if (length(coeffTxt) > 2) && isequal(coeffTxt(1:2), '0 ')
                                 % purely imaginary term, remove the zero
                                 coeffTxt = coeffTxt(2:end);
