@@ -1452,6 +1452,32 @@ classdef (InferiorClasses = {?hpf}) lava
             varargout = varIdxCell;
         end
         
+        % extracts the decomposition in terms of monomials
+        function [M, monomials] = decompose(op1)
+            % [M, monomials] = decompose(op1)
+            % 
+            % Decomposes all elements of a lava object in terms of its
+            % monomials. The output is always a 2-D matrix. For a n x 1
+            % object op1, the output satisfies
+            %    op1 = M*monomials'
+            %
+            %
+            % Example:
+            % 
+            % polys = kron(lava([1 2 3]'), lava(round(rand(3,1))))
+            % [M, monomials] = decompose(polys)
+            
+            monomials = uniqueVar(op1).';
+
+            [maxWidth, maxBase, uniqueIdx, result] = assignVarIdx(op1(:));
+
+            tmp = inversePerm(uniqueIdx+1);
+            indices = squeeze(result.varIdx)+1;
+            coeffs = squeeze(result.coeff);
+
+            M = full(sparse([1:size(indices,1)]'*ones(1,size(indices,2)), tmp(indices), coeffs));
+        end
+        
         
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         %    Crater bridge operations
