@@ -1,4 +1,4 @@
-classdef lava
+classdef (InferiorClasses = {?hpf}) lava
 % LAserre VAriables objects:
 % a lava object represents a matrix of polynomials, M(i,j)
 % where the powers of the monomials are stored in opVar(i,j,:,:), [1 1] for x1^2 etc
@@ -121,7 +121,7 @@ classdef lava
                         coeff = permute(reshape(cell2mat(coeff),maxDepth,m1,n1),[2,3,1]);
                         opOut.opVar = opVar;
                         opOut.coeff = coeff;
-                    elseif isa(opVar,'double') && isa(coeff,'double')
+                    elseif isnumeric(opVar) && isnumeric(coeff)
                         % should allow construction from 4-D opVar with 3-D coeff
                         if ismatrix(opVar) && ismatrix(coeff)
                             % both are 2-D matrix, 
@@ -129,8 +129,8 @@ classdef lava
                             if size(opVar,1)~=size(coeff,1) || size(opVar,2)~=size(coeff,2)
                                 error('Wrong size. opVar and coeff must have same size.')
                             end
-                            opOut.opVar(:,:,1,1) = opVar;
-                            opOut.coeff(:,:,1,1) = coeff;
+                            opOut.opVar = opVar;
+                            opOut.coeff = coeff;
                         elseif ~ismatrix(opVar) % && ~ismatrix(coeff)
                             % in case some dimensions has length 1
                             if (size(opVar,1)==1 || size(opVar,2)==1) && (numel(coeff) > 0)
@@ -492,9 +492,9 @@ classdef lava
                 
             % one of them is double
             % simply .* the coeffs with the double and keep opVar
-            elseif isa(op1,'double') && isa(op2,'lava')
+            elseif isnumeric(op1) && isa(op2,'lava')
                 opOut = lava(op2.opVar, op1.*op2.coeff);
-            elseif isa(op1,'lava') && isa(op2,'double')
+            elseif isa(op1,'lava') && isnumeric(op2)
                 opOut = lava(op1.opVar, op2.*op1.coeff);
             end
             
@@ -518,10 +518,10 @@ classdef lava
             % a double matrix with a lava matrix
             % a lava matrix with a double matrix
             % or two lava matrices
-            if isa(op1,'double') && isa(op2,'lava')
+            if isnumeric(op1) && isa(op2,'lava')
                 op1 = lava.num2lava(op1);
                 opOut = mtimes(op1,op2);
-            elseif isa(op1,'lava') && isa(op2,'double')
+            elseif isa(op1,'lava') && isnumeric(op2)
                 op2 = lava.num2lava(op2);
                 opOut = mtimes(op1,op2);
             elseif isa(op1,'lava') && isa(op2,'lava')
@@ -588,7 +588,7 @@ classdef lava
         
         % element-wise power
         function opOut = power(op1,exponent)
-            if ~isa(exponent, 'double') || (numel(exponent) ~= 1) || ~isequal(round(exponent), exponent) || (exponent < 0)
+            if ~isnumeric(exponent) || (numel(exponent) ~= 1) || ~isequal(round(exponent), exponent) || (exponent < 0)
                 error('Elemement-wise power is only supported with simple exponents.');
             end
             
@@ -631,10 +631,10 @@ classdef lava
             op1 = varargin{1};
             op2 = varargin{2};
             
-            if isa(op1,'double') && isa(op2,'lava')
+            if isnumeric(op1) && isa(op2,'lava')
                 op1 = lava.num2lava(op1);
                 opOut = kron(op1,op2);
-            elseif isa(op1,'lava') && isa(op2,'double')
+            elseif isa(op1,'lava') && isnumeric(op2)
                 op2 = lava.num2lava(op2);
                 opOut = kron(op1,op2);
             elseif isa(op1,'lava') && isa(op2,'lava')
@@ -1566,7 +1566,7 @@ classdef lava
         function out = num2lava(num)
             % converts a double matrix into a lava objects
             % opVar: [0] means constant 1
-            if isa(num,'double') && ismatrix(num)
+            if isnumeric(num) && ismatrix(num)
                 out = lava(zeros(size(num)),num);
             else
                 error('Input must be numeric matrix.')
