@@ -1607,6 +1607,119 @@ classdef (InferiorClasses = {?hpf}) lava
      end
      
      methods(Static)
+         
+         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+         %    Some more constructors
+         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+         
+         function opOut = symmetric(dim, var)
+            % Constructs a symmetric real matrix of size dim x dim, starting
+            % with variable var. var can also be a vector of variables
+            % (with dim*(dim+1)/2 elements). In this case, the first dim
+            % elements are assigned to the diagonal
+            %
+            % Example:
+            %   lava.symmetric(4, 1)
+            %   lava.symmetric(3, [0 1 2 0 3 0])
+            
+            % Check input
+            if numel(var) > 1
+                if (numel(var) ~= dim*(dim+1)/2)
+                    error('Var should be a scalar, or a vector of length dim*(dim+1)/2');
+                end
+                diagIndices = cumsum([1 (dim:-1:2)]);
+                vars = zeros(1,dim*(dim+1)/2);
+                vars(diagIndices) = var(1:dim);
+                vars(setdiff(1:dim*(dim+1)/2,diagIndices)) = var(dim+1:end);
+            else
+                vars = var + [0:dim*(dim+1)/2-1];
+            end
+            
+            % We identify diagonal and lower-diagonal elements
+            d = 1:dim+1:dim^2;
+            down = (tril(ones(dim, dim),-1) ~= 0);
+            
+            M = zeros(dim, dim);
+            M(d) = 1;
+            M(down) = 1;
+            
+            M(M~=0) = vars;
+            Mdown = M;
+            Mdown(d) = 0;
+            M = M + Mdown.';
+            
+            opOut = lava(M);
+        end
+        
+         function opOut = antiSymmetric(dim, var)
+            % Constructs an antisymmetric real matrix of size dim x dim, starting
+            % with variable var. Var can also be a vector of variables
+            % (with dim*(dim-1)/2 elements).
+            %
+            % Example:
+            %   lava.antiSymmetric(4, 1)
+            %   lava.antiSymmetric(3, [1 2 3])
+            
+            % Check input
+            if numel(var) > 1
+                if (numel(var) ~= dim*(dim-1)/2)
+                    error('Var should be a scalar, or a vector of length dim*(dim+1)/2');
+                end
+                vars = var(:);
+            else
+                vars = var + [0:dim*(dim-1)/2-1];
+            end
+            
+            % We identify lower-diagonal elements
+            down = (tril(ones(dim, dim),-1) ~= 0);
+            
+            M = zeros(dim, dim);
+            M(down) = 1;
+            
+            M(M~=0) = vars;
+            Mdown = M;
+            M = M + Mdown.';
+            
+            % The coefficients are not all the same
+            coeffs = zeros(dim, dim);
+            coeffs(down) = -1;
+            coeffs = coeffs - coeffs.';
+            
+            opOut = lava(M, coeffs);
+        end
+        
+        function opOut = hermitian(dim, var)
+            % Constructs a hermitian matrix of size dim x dim, starting
+            % with variable var. var can also be a vector of variables
+            % (with dim^2 elements)
+            %
+            % Example:
+            %   lava.hermitian(3, 1)
+            
+            % Check input
+            if numel(var) > 1
+                if (numel(var) ~= dim^2)
+                    error('Var should be a scalar, or a vector of length dim*(dim+1)/2');
+                end
+                vars = var(:);
+            else
+                vars = var + [0:dim^2-1];
+            end
+            
+            % The real part is symmetric
+            if numel(var) > 1
+                % Keep the ordering given by the user
+                re = lava.symmetric(dim, var(1:dim*(dim+1)/2));
+            else
+                re = lava.symmetric(dim, vars(1));
+            end
+            
+            % The imaginary part is antisymmetric
+            im = lava.antiSymmetric(dim, vars(dim*(dim+1)/2+1:end));
+            
+            opOut = re + 1i*im;
+        end
+
                  
         function out = num2lava(num)
             % converts a double matrix into a lava objects
