@@ -403,7 +403,26 @@ classdef (InferiorClasses = {?hpf}) lava
 %             
 %             % TODO
 %         end
-        
+    
+        % diagonal part
+        function opOut = diag(op1)
+            
+            [m, n, d, w] = size(op1);
+            if m ~= n
+                error('Matrix is not square');
+            end
+            
+            opVar = reshape(op1.opVar, [m*n, d*w]);
+            coeff = reshape(op1.coeff, [m*n, d]);
+
+            indices = 1:m+1:m^2;
+            opVar = reshape(opVar(indices,:), [m 1 d w]);
+            coeff = reshape(coeff(indices,:), [m 1 d]);
+            
+            opOut = simplify(lava(opVar, coeff), true);
+        end
+
+
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         %    basic arithmetic operations
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
