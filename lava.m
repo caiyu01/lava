@@ -1317,7 +1317,66 @@ classdef (InferiorClasses = {?hpf}) lava
             opOut = lava(reshape(opVar1,m1,n1,d1,w1),coeff1);
         end
         
-         
+        function opOut = substitute(op1, op2, value)
+            assert((prod(size(op2)) == 1) && isscalar(value), 'Only assignment of a single operator is currently supported');
+            
+            % We make sure lava objects are in their simplified form
+            op1 = simplify(op1);
+            op2 = simplify(op2);
+            assert(size(op2,3) == 1, 'Only monomial assignment is currently available');
+            
+            [m1, n1, d1, w1] = size(op1);
+            opVar1 = op1.opVar;
+            coeff1 = op1.coeff;
+            [m2, n2, d2, w2] = size(op2);
+            opVar2 = op2.opVar;
+            coeff2 = op2.coeff;
+            
+            if w1 < w2
+                % Nothing to be done
+                opOut = op1;
+                return;
+            end
+            
+            % We simply check each element
+            for i = 1:m1
+                for j = 1:n1
+                    for k = 1:d1
+                        sel = [];
+                        co = 1;
+                        for l = 1:w1
+                            if opVar1(i,j,k,l) == opVar2(1,1,1,co)
+                                sel = [sel l];
+                                co = co + 1;
+                                if co > w2
+                                    co = 1;
+                                end
+                            end
+                        end
+                        if length(sel) >= w2
+                            % We found the monomial we were looking for at
+                            % least once, let's substitute it
+                            
+                            % We remove partial identifications
+                            nbFound = floor(length(sel)/w2);
+                            sel = sel(1:w2*nbFound);
+                            
+                            % We remove the monomial
+                            opVar1(i,j,k,sel) = 0;
+                            
+                            % And adjust the coefficient
+                            coeff1(i,j,k) = coeff1(i,j,k)*(value/coeff2(1,1,1)).^nbFound;
+                        end
+                    end
+                end
+            end
+            
+            % Create and slightly simplify the result
+            opOut = lava(reshape(opVar1,m1,n1,d1,w1),coeff1);
+            simplify(opOut, true);
+        end
+        
+        
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         %    basic variable-related operations
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
