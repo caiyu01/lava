@@ -282,7 +282,7 @@ classdef (InferiorClasses = {?hpf}) lava
                      coeff1 = reshape(coeff1,[m2,1,d1]);
                      
                      % Permute if needed
-                     if (m1 == 1) && (n1 > 1)
+                     if ~strcmp(s.subs{1},':') && (m1 == 1) && (n1 > 1)
                          opVar1 = permute(opVar1, [2 1 3 4]);
                          coeff1 = permute(coeff1, [2 1 3]);
                      end
@@ -1325,11 +1325,12 @@ classdef (InferiorClasses = {?hpf}) lava
         % TODO IN THIS SECTION : Ignore variables which come with a
         %                        coefficient 0!
         
-        function out = unique(varargin)
+        function [out, IA] = unique(varargin)
             % from several lava objects
             % returns the list of unique elements
             % example: a = lava([1 2 3])
             %          out = unique(a,kron(a,a))
+            %          [out, IA] = unique(a,kron(a,a))
             
             % we concatenate all objects together
             op = [];
@@ -1348,7 +1349,7 @@ classdef (InferiorClasses = {?hpf}) lava
                 s(end+1:4) = 1;
             end
             table = [reshape(op.opVar, s(1)*s(2), s(3)*s(4)), reshape(op.coeff, s(1)*s(2), s(3))];
-            uniques = unique(table, 'rows');
+            [uniques, IA] = unique(table, 'rows');
             
             % Creates the corresponding lava object
             s2 = s;
