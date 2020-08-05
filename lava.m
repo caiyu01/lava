@@ -1281,6 +1281,12 @@ classdef (InferiorClasses = {?hpf}) lava
                     % sort according to opVar
                     [tmpV, idx] = sortrows(tmpV); 
                     tmpC = tmpC(idx); % the coeffs follows
+                    % the constant is moved
+                    positionOfConstant = find((tmpC~=0).*prod(tmpV==0,2));
+                    targetPosition = sum(sum(tmpV,2)==0);
+                    if ~isempty(positionOfConstant)
+                        tmpC([positionOfConstant, targetPosition]) = tmpC([targetPosition, positionOfConstant]);
+                    end
                     % save the result
                     opVar1(:,(1:w1)+(ii-1)*w1) = tmpV;
                     coeff1(:,ii) = tmpC;
@@ -1319,6 +1325,8 @@ classdef (InferiorClasses = {?hpf}) lava
         
         function opOut = substitute(op1, op2, value)
             assert((prod(size(op2)) == 1) && isscalar(value), 'Only assignment of a single operator is currently supported');
+            
+            assert(~isa(value, 'lava'), 'Only scalar assignments is currently supported')
             
             % We make sure lava objects are in their simplified form
             op1 = simplify(op1);
