@@ -197,7 +197,7 @@ classdef (InferiorClasses = {?hpf}) lava
         
         
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        %    subscripted referecing and assignment
+        %    subscripted referencing and assignment
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         
         % Squeezed operators and coefficients access
@@ -1107,7 +1107,7 @@ classdef (InferiorClasses = {?hpf}) lava
                 niceDisplay = true;
                 shortenDisplay = false;
             else
-                niceDisplay = (size(op1.opVar,2)*size(op1.opVar,3)*size(op1.opVar,4) <= 100);
+                niceDisplay = (size(op1.opVar,2)*size(op1.opVar,3)*size(op1.opVar,4) <= 1000);
                 shortenDisplay = niceDisplay && (size(op1,1) > 30);
             end
             
@@ -1651,7 +1651,7 @@ classdef (InferiorClasses = {?hpf}) lava
             opOut = lava(M);
         end
         
-         function opOut = antiSymmetric(dim, var)
+        function opOut = antiSymmetric(dim, var)
             % Constructs an antisymmetric real matrix of size dim x dim, starting
             % with variable var. Var can also be a vector of variables
             % (with dim*(dim-1)/2 elements).
