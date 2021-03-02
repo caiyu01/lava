@@ -773,6 +773,50 @@ classdef (InferiorClasses = {?hpf}) lava
             opOut = simplify(opOut, true);
         end
         
+        % prod
+        function opOut = prod(op1, dim)
+            %   prod(a) : normal product (column-wise for matrices)
+            %   prod(a, dim) : product along the dimension dim
+            %   prod(a, 'all') : product of all elements
+            if nargin < 2
+                if size(op1,1) ~= 1
+                    dim = 1;
+                else
+                    dim = 2;
+                end
+            end
+
+            % Now we call the relevant sum procedure. Since the function creates a
+            % new object with the result, we keep the corresponding handle...
+            switch dim
+                case 'all'
+                    op1 = op1.subsref(struct('type','()','subs',{{':'}}));
+                    opOut = prod(op1);
+                case 1
+                    if size(op1,1) > 1
+                        op11 = op1.subsref(struct('type','()','subs',{{1,':'}}));
+                        op12 = op1.subsref(struct('type','()','subs',{{2,':'}}));
+                        op1rest = op1.subsref(struct('type','()','subs',{{3:size(op1,1),':'}}));
+                        opOut = prod([op11.*op12; op1rest], 1);
+                    else
+                        % Avoid too big representations
+                        opOut = simplify(op1, true);
+                    end
+                case 2
+                    if size(op1,2) > 1
+                        op11 = op1.subsref(struct('type','()','subs',{{':',1}}));
+                        op12 = op1.subsref(struct('type','()','subs',{{':',2}}));
+                        op1rest = op1.subsref(struct('type','()','subs',{{':',3:size(op1,2)}}));
+                        opOut = prod([op11.*op12, op1rest], 2);
+                    else
+                        % Avoid too big representations
+                        opOut = simplify(op1, true);
+                    end
+                otherwise
+                    error('Unexpected argument in prod');
+            end
+        end
+        
         % round
         function opOut = round(op1, nbDigits)
             % Rounding off coefficients
