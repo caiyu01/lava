@@ -1173,7 +1173,7 @@ classdef (InferiorClasses = {?hpf}) lava
                 if shortenDisplay
                     LinesToDisplay = [1:24, size(op1,1)-5:size(op1,1)];
                     % Get text description of all elements to be printed
-                    cellDescription = op1.subsref(struct('type','()','subs',{{LinesToDisplay}})).toStr;
+                    cellDescription = op1.subsref(struct('type','()','subs',{{LinesToDisplay,':'}})).toStr;
                 else
                     LinesToDisplay = 1:size(op1,1);
                     % Get text description of all elements to be printed
